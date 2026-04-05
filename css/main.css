@@ -94,6 +94,11 @@ body { overflow:hidden; background:#5ECFFF; font-family:'Courier New',monospace;
 /* ── WAREHOUSE PANEL ─────────────────────────── */
 .wh-grid { display:grid; grid-template-columns:1.2fr 1.6fr; gap:16px; }
 
+.build-hint {
+  min-height:1.2em; font-size:11px; color:#ffaa66; letter-spacing:.4px;
+  margin-bottom:8px; line-height:1.35;
+}
+
 .parts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .part-card {
   border:1px solid rgba(127,232,255,.18); padding:12px 8px; cursor:pointer;
@@ -119,7 +124,11 @@ body { overflow:hidden; background:#5ECFFF; font-family:'Courier New',monospace;
   padding:7px 10px; background:rgba(127,232,255,.05);
   border:1px solid rgba(127,232,255,.13); font-size:10px; letter-spacing:.5px;
 }
-.asm-part .rm { margin-left:auto; cursor:pointer; color:#ff6655; font-size:12px; font-weight:bold; }
+.asm-part .rm {
+  margin-left:auto; cursor:pointer; font-size:14px; font-weight:bold;
+  background:none; border:none; padding:0 4px; font-family:inherit; line-height:1;
+  color:#ff6655;
+}
 .asm-part .rm:hover { color:#ff2200; }
 
 .asm-stack::-webkit-scrollbar { width:4px; }

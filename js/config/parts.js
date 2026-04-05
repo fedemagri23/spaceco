@@ -46,6 +46,7 @@ export const PARTS = {
     h: 7,
     r: 2.3,
     shape: 'cylinder',
+    maxParallelMotors: 4,
     props: {
       aceleración: '5.2 g',
       empuje: '1200 kN',
@@ -60,6 +61,7 @@ export const PARTS = {
     h: 9,
     r: 2.1,
     shape: 'cylinder',
+    maxParallelMotors: 1,
     props: {
       volumen: '834 L',
       capacidad: '970 kg (RP-1)',
@@ -74,6 +76,7 @@ export const PARTS = {
     h: 5,
     r: 2.1,
     shape: 'cylinder',
+    maxParallelMotors: 2,
     props: {
       'capacidad útil': '2.8 tons',
       confianza: '99.4%',
@@ -88,6 +91,8 @@ export const PARTS = {
     h: 5,
     r: 2.0,
     shape: 'cone',
+    /** Límite si va sobre un bloque de motores; si va sobre cuerpo, no se usa. */
+    maxParallelMotors: 4,
     props: {
       'resistencia térmica': '2500 K',
       confianza: '99.7%',

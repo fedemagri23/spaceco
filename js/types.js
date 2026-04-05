@@ -20,7 +20,8 @@
 /**
  * @typedef {Object} SavedRocket
  * @property {string} name
- * @property {string[]} parts - ids en orden de apilado (base → punta)
+ * @property {object[]} [build] - segmentos `{ kind:'motors'|'body', ... }` (preferido)
+ * @property {string[]} [parts] - formato antiguo (solo lectura / migración)
  */
 
 export {};

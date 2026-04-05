@@ -1,5 +1,5 @@
 /**
- * Panel "Galpón de Ensamblaje": inventario, apilado de piezas, preview y guardado de cohete.
+ * Panel "Galpón de Ensamblaje": inventario, apilado por segmentos (motores en paralelo + cuerpos), preview y guardado.
  */
 
 import { gameState } from '../game/state.js';
@@ -7,6 +7,13 @@ import { PARTS } from '../config/parts.js';
 import { buildRocketMesh } from '../scene/rocketMesh.js';
 import { activeUICanvases } from './ui3d.js';
 import { closeAllPanels } from './closePanels.js';
+import {
+  appendPartOrError,
+  buildSegmentLabels,
+  removeSegmentAndAbove,
+  isEngineKey,
+  mustHaveMotorsBlockBelow,
+} from '../game/rocketBuild.js';
 
 /**
  * @param {string} partKey
@@ -23,6 +30,17 @@ function showPartTooltip(partKey) {
       <span class="tooltip-val">${val}</span>
     </div>`;
   });
+  if (typeof p.maxParallelMotors === 'number') {
+    html += `<div class="tooltip-prop"><span class="tooltip-key">Motores en paralelo (máx. bajo esta pieza):</span><span class="tooltip-val">${p.maxParallelMotors}</span></div>`;
+    if (mustHaveMotorsBlockBelow(partKey)) {
+      html += `<div class="tooltip-prop"><span class="tooltip-key">Ensamblaje:</span><span class="tooltip-val">debe ir justo encima de un bloque de motores</span></div>`;
+    } else if (partKey === 'capsule' || partKey === 'payloadBay') {
+      html += `<div class="tooltip-prop"><span class="tooltip-key">Ensamblaje:</span><span class="tooltip-val">puede ir sobre motores (respetando el máx.) o directamente sobre otro cuerpo</span></div>`;
+    }
+  }
+  if (isEngineKey(partKey)) {
+    html += `<div class="tooltip-prop"><span class="tooltip-key">Ensamblaje:</span><span class="tooltip-val">clic repetido añade el mismo motor en paralelo (mismo bloque)</span></div>`;
+  }
   tooltip.innerHTML = html;
   tooltip.classList.add('on');
 }
@@ -31,10 +49,36 @@ function hidePartTooltip() {
   document.getElementById('tooltip')?.classList.remove('on');
 }
 
+function setBuildHint(msg) {
+  const el = document.getElementById('build-hint');
+  if (el) el.textContent = msg || '';
+}
+
+/**
+ * Clic en #asm-stack: el índice va en `data-idx` (evita `data-i` / `dataset.i` poco fiables).
+ * @param {MouseEvent} e
+ */
+function onAsmStackClick(e) {
+  const raw = e.target;
+  const el = raw instanceof Element ? raw : raw.parentElement;
+  const rm = el?.closest('.rm');
+  const stack = document.getElementById('asm-stack');
+  if (!rm || !stack || !stack.contains(rm)) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const i = Number.parseInt(rm.getAttribute('data-idx') || '', 10);
+  if (!Number.isFinite(i)) return;
+  removeSegmentAndAbove(gameState.build, i, gameState.inv);
+  setBuildHint('');
+  drawPartsGrid();
+  drawAsmStack();
+}
+
 /**
  * Redibuja la grilla de piezas disponibles en inventario.
  */
 export function drawPartsGrid() {
+  setBuildHint('');
   const el = document.getElementById('parts-grid');
   if (!el) return;
   el.innerHTML = '';
@@ -54,8 +98,9 @@ export function drawPartsGrid() {
 
     if (stock > 0) {
       card.onclick = () => {
-        gameState.build.push(key);
-        gameState.inv[key]--;
+        const err = appendPartOrError(gameState.build, key, gameState.inv);
+        if (err) setBuildHint(err);
+        else setBuildHint('');
         drawPartsGrid();
         drawAsmStack();
       };
@@ -87,39 +132,38 @@ function updatePreviewCanvas() {
 }
 
 /**
- * Lista vertical del ensamblaje actual con botón quitar.
+ * Lista del ensamblaje (base → punta) con quitar por segmento.
  */
 export function drawAsmStack() {
   const el = document.getElementById('asm-stack');
   if (!el) return;
+  el.removeEventListener('click', onAsmStackClick);
   el.innerHTML = '';
 
   updatePreviewCanvas();
 
   if (!gameState.build.length) {
-    el.innerHTML = '<div class="empty">Agrega piezas desde el inventario.</div>';
+    el.innerHTML = '<div class="empty">Booster y tanque van siempre sobre motores. Bahía de carga y cápsula pueden ir sobre motores o sobre otro cuerpo. Nada encima de la cápsula.</div>';
+    el.addEventListener('click', onAsmStackClick);
     return;
   }
 
-  [...gameState.build].reverse().forEach((key, idx) => {
-    const realIdx = gameState.build.length - 1 - idx;
-    const p = PARTS[key];
+  gameState.build.forEach((seg, idx) => {
     const row = document.createElement('div');
     row.className = 'asm-part';
-    row.innerHTML = `<span>${p.name}</span>
-      <span class="rm" data-i="${realIdx}">X</span>`;
+    let label;
+    if (seg.kind === 'motors') {
+      const n = PARTS[seg.engineId]?.name || seg.engineId;
+      label = `${seg.count}× ${n}`;
+    } else {
+      label = PARTS[seg.id]?.name || seg.id;
+    }
+    row.innerHTML = `<span class="asm-part-label">${label}</span>
+      <button type="button" class="rm" data-idx="${idx}" aria-label="Quitar segmento">×</button>`;
     el.appendChild(row);
   });
 
-  el.querySelectorAll('.rm').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const i = Number(/** @type {HTMLElement} */ (btn).dataset.i);
-      gameState.inv[gameState.build[i]]++;
-      gameState.build.splice(i, 1);
-      drawPartsGrid();
-      drawAsmStack();
-    });
-  });
+  el.addEventListener('click', onAsmStackClick);
 }
 
 /**
@@ -127,9 +171,15 @@ export function drawAsmStack() {
  */
 export function saveRocket() {
   if (!gameState.build.length) return;
+  const hasBody = gameState.build.some((s) => s.kind === 'body');
+  if (!hasBody) {
+    setBuildHint('Añade al menos un cuerpo de etapa antes de guardar.');
+    return;
+  }
   const n = gameState.savedRockets.length + 1;
-  gameState.savedRockets.push({ name: `Cohete Mk.${n}`, parts: [...gameState.build] });
+  gameState.savedRockets.push({ name: `Cohete Mk.${n}`, build: [...gameState.build] });
   gameState.build = [];
+  setBuildHint('');
   drawPartsGrid();
   drawAsmStack();
   closeAllPanels();

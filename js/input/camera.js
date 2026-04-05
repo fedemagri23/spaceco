@@ -76,6 +76,7 @@ export function initCameraControls(onHoverMove, onClick) {
   window.addEventListener('mouseup', (e) => {
     const moved = Math.abs(e.clientX - drag.downX) + Math.abs(e.clientY - drag.downY);
     drag.active = drag.pan = false;
+    if (e.target instanceof Element && e.target.closest('.panel')) return;
     if (moved < 6 && e.button === 0) onClick(e.clientX, e.clientY, e.button);
   });
 

@@ -20,10 +20,10 @@ function initialInventory() {
  * @type {{
  *   money: number,
  *   inv: Record<string, number>,
- *   savedRockets: { name: string, parts: string[] }[],
- *   build: string[],
+ *   savedRockets: { name: string, build?: unknown, parts?: string[] }[],
+ *   build: { kind: string, engineId?: string, count?: number, id?: string }[],
  *   selectedRocket: number,
- *   padRocket: { name: string, parts: string[] } | null
+ *   padRocket: { name: string, build?: unknown, parts?: string[] } | null
  * }}
  */
 export const gameState = {
