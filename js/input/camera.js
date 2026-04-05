@@ -9,7 +9,7 @@ import { camera, renderer } from '../scene/setup.js';
 export const cam = {
   theta: 0.55,
   phi: 0.88,
-  radius: 460,
+  radius: 680,
   tx: 0,
   ty: 0,
   tz: 0,
