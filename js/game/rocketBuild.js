@@ -12,7 +12,7 @@ import { isFuelTankPartId } from '../config/partSimulation.js';
 /** @typedef {{ kind: 'body', id: string }} BodySeg */
 /** @typedef {MotorClusterSeg | BodySeg} BuildSegment */
 
-const ENGINE_IDS = new Set(['engine', 'raptorEngine']);
+const ENGINE_IDS = new Set(['engine', 'raptorEngine', 'rs25Engine']);
 
 /** Máximo de motores en un mismo bloque al ir sumando motores (tope duro). */
 export const MAX_MOTORS_PER_CLUSTER = 4;

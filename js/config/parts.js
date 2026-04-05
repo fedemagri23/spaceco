@@ -51,6 +51,25 @@ export const PARTS = {
       peso: '320 kg',
     },
   },
+  rs25Engine: {
+    name: 'Motor RS-25',
+    color: 0x0b0e18,
+    h: 4.2,
+    r: 2.4,
+    shape: 'cone',
+    sim: {
+      massKg: 3177,
+      thrustN: 1_860_000,
+      propellantKgPerS: 35,
+    },
+    props: {
+      aceleración: '4.5 g',
+      confianza: '99.9%',
+      consumo: '0.7 L/s',
+      empuje: '1860 kN',
+      peso: '3177 kg',
+    },
+  },
   booster: {
     name: 'Booster SRB',
     color: 0x445566,
@@ -145,6 +164,7 @@ export const PARTS = {
 export const PART_PRICES = {
   engine: 50000,
   raptorEngine: 67000,
+  rs25Engine: 200000,
   booster: 75000,
   fuelTank: 45000,
   fuelTankXL: 65500,
