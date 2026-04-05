@@ -1,0 +1,132 @@
+/**
+ * SpaceCo — estilos globales del juego (HUD, paneles, tooltips, componentes UI).
+ * Para nuevos paneles, reutiliza .panel, .lbl, .btn y las clases de grid existentes.
+ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#5ECFFF; font-family:'Courier New',monospace; user-select:none; }
+#app { width:100vw; height:100vh; }
+
+/* ── HUD ─────────────────────────────────────── */
+#hud {
+  position:fixed; top:0; left:0; right:0;
+  display:flex; justify-content:space-between; align-items:flex-start;
+  padding:14px 18px; pointer-events:none; z-index:10;
+}
+.hud-pill {
+  background:rgba(0,15,35,0.78); color:#7FE8FF;
+  border:1px solid rgba(127,232,255,0.28);
+  padding:7px 14px; font-size:11px; letter-spacing:2.5px; text-transform:uppercase;
+}
+.hud-money { color:#AAFF55; }
+
+/* ── TOOLTIP ─────────────────────────────────── */
+#tooltip {
+  position:fixed; top:50%; right:20px; transform:translateY(-50%);
+  background:rgba(0,15,35,0.92); color:#7FE8FF;
+  padding:16px 20px; font-size:12px; letter-spacing:1px;
+  pointer-events:auto; opacity:0; transition:opacity .2s; z-index:101;
+  border:1px solid rgba(127,232,255,0.35); width:320px;
+  max-height:90vh; overflow-y:auto;
+}
+#tooltip.on { opacity:1; }
+.tooltip-title { font-weight:bold; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; color:#AAFF55; font-size:13px; }
+.tooltip-prop { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid rgba(127,232,255,0.15); font-size:11px; }
+.tooltip-prop:last-child { border-bottom:none; }
+.tooltip-key { color:#7FE8FF; }
+.tooltip-val { color:#cceeff; text-align:right; margin-left:16px; font-weight:bold; }
+
+/* ── OVERLAY + PANELS ────────────────────────── */
+#overlay {
+  position:fixed; inset:0; background:rgba(0,8,20,.45);
+  z-index:50; display:none;
+}
+#overlay.on { display:block; }
+
+.panel {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:rgba(4,12,28,0.97); border:1px solid rgba(127,232,255,.35);
+  color:#cceeff; min-width:720px; max-width:92vw; z-index:100; display:none;
+}
+.panel.on { display:block; }
+
+.panel-hdr {
+  background:rgba(0,90,150,.22); border-bottom:1px solid rgba(127,232,255,.25);
+  padding:11px 18px; display:flex; justify-content:space-between; align-items:center;
+}
+.panel-title { font-size:13px; letter-spacing:3px; text-transform:uppercase; color:#7FE8FF; }
+.panel-body  { padding:24px 28px; }
+
+.x-btn {
+  background:none; border:1px solid rgba(127,232,255,.35); color:#7FE8FF;
+  width:22px; height:22px; cursor:pointer; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+}
+.x-btn:hover { background:rgba(127,232,255,.1); }
+
+/* ── SHARED COMPONENTS ───────────────────────── */
+.lbl {
+  font-size:12px; letter-spacing:2.5px; text-transform:uppercase;
+  color:#7FE8FF; margin-bottom:9px;
+}
+.btn {
+  width:100%; padding:10px; margin-top:14px;
+  background:rgba(0,140,210,.2); border:1px solid rgba(127,232,255,.45);
+  color:#7FE8FF; font-family:inherit; font-size:13px;
+  letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:background .15s;
+}
+.btn:hover    { background:rgba(0,140,210,.38); }
+.btn:disabled { opacity:.35; cursor:not-allowed; }
+.btn.green    { border-color:#AAFF55; color:#AAFF55; background:rgba(80,200,0,.1); }
+.empty        { font-size:10px; color:rgba(127,232,255,.4); text-align:center; padding:24px; letter-spacing:1px; line-height:1.8; }
+
+/* ── LAUNCH PANEL ────────────────────────────── */
+.rocket-list { display:flex; flex-direction:column; gap:10px; }
+.rocket-row {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border:1px solid rgba(127,232,255,.18); cursor:pointer; transition:background .15s;
+}
+.rocket-row:hover    { background:rgba(127,232,255,.07); }
+.rocket-row.selected { border-color:#7FE8FF; background:rgba(127,232,255,.11); }
+.r-canvas { width:50px; height:50px; }
+.r-name  { font-size:14px; letter-spacing:1px; color:#fff; }
+.r-parts { font-size:12px; color:#7FE8FF; margin-top:2px; letter-spacing:.5px; }
+
+/* ── WAREHOUSE PANEL ─────────────────────────── */
+.wh-grid { display:grid; grid-template-columns:1.2fr 1.6fr; gap:16px; }
+
+.parts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.part-card {
+  border:1px solid rgba(127,232,255,.18); padding:12px 8px; cursor:pointer;
+  text-align:center; transition:background .15s;
+  display:flex; flex-direction:column; align-items:center;
+}
+.part-card:hover   { background:rgba(127,232,255,.07); }
+.part-card.depleted { opacity:.38; cursor:not-allowed; }
+.p-canvas { width:60px; height:60px; margin-bottom:4px; }
+.p-name  { font-size:12px; letter-spacing:1px; color:#cceeff; }
+.p-stock { font-size:12px; color:#7FE8FF; margin-top:3px; }
+
+.assembly-box {
+  border:1px solid rgba(127,232,255,.18); padding:11px;
+  display:flex; flex-direction:column; background:rgba(0,10,25,.3);
+}
+.asm-stack {
+  flex:1; display:flex; flex-direction:column; gap:4px;
+  overflow-y:auto; padding-right:2px;
+}
+.asm-part {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; background:rgba(127,232,255,.05);
+  border:1px solid rgba(127,232,255,.13); font-size:10px; letter-spacing:.5px;
+}
+.asm-part .rm { margin-left:auto; cursor:pointer; color:#ff6655; font-size:12px; font-weight:bold; }
+.asm-part .rm:hover { color:#ff2200; }
+
+.asm-stack::-webkit-scrollbar { width:4px; }
+.asm-stack::-webkit-scrollbar-track { background:transparent; }
+.asm-stack::-webkit-scrollbar-thumb { background:rgba(127,232,255,.25); }
+
+#tooltip::-webkit-scrollbar { width:6px; }
+#tooltip::-webkit-scrollbar-track { background:transparent; }
+#tooltip::-webkit-scrollbar-thumb { background:rgba(127,232,255,.35); border-radius:3px; }
+#tooltip::-webkit-scrollbar-thumb:hover { background:rgba(127,232,255,.55); }

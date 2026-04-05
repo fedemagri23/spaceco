@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpaceCo — Orbital Ops</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="hud">
+    <div class="hud-pill">SpaceCo // Orbital Ops</div>
+    <div class="hud-pill hud-money" id="money-el">$ 1.000.000</div>
+  </div>
+  <div id="tooltip"></div>
+
+  <div id="overlay" onclick="closeAll()"></div>
+
+  <div class="panel" id="launch-panel">
+    <div class="panel-hdr">
+      <span class="panel-title">/// Plataforma de Lanzamiento</span>
+      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+    </div>
+    <div class="panel-body">
+      <div class="lbl">Seleccionar cohete</div>
+      <div class="rocket-list" id="rocket-list"></div>
+      <button type="button" class="btn" id="deploy-btn" onclick="deployRocket()">Desplegar en plataforma</button>
+    </div>
+  </div>
+
+  <div class="panel" id="warehouse-panel">
+    <div class="panel-hdr">
+      <span class="panel-title">/// Galpón de Ensamblaje</span>
+      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+    </div>
+    <div class="panel-body">
+      <div class="wh-grid">
+        <div>
+          <div class="lbl">Inventario de piezas</div>
+          <div class="parts-grid" id="parts-grid"></div>
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <div class="lbl">Vista Previa y Ensamblaje</div>
+          <div style="display:flex; gap:10px; height:200px;">
+            <canvas id="preview-canvas" width="160" height="220" style="border:1px solid rgba(127,232,255,.18); background:rgba(0,10,25,.6);"></canvas>
+            <div class="assembly-box" style="flex:1;">
+              <div class="asm-stack" id="asm-stack"></div>
+            </div>
+          </div>
+          <button type="button" class="btn green" onclick="saveRocket()">Guardar cohete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="store-panel">
+    <div class="panel-hdr">
+      <span class="panel-title">/// Centro de Distribución</span>
+      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+    </div>
+    <div class="panel-body">
+      <div class="lbl">Comprar Piezas</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;" id="store-grid"></div>
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid rgba(127,232,255,.18);">
+        <div class="lbl">Saldo: <span style="color:#AAFF55; font-weight:bold;" id="balance-display">$ 0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Módulos ES6: abrir con servidor HTTP local (no file://). Ver docs/arquitectura.md -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
