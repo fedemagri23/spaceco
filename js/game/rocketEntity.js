@@ -24,7 +24,7 @@ import { GRAVITY_SURFACE_MS2 } from './physics.js';
  * @property {number} dragRefAreaM2 - área ref. arrastre (m²)
  * @property {number} dragCoeff
  * @property {number} maxPhase - fases del montaje actual
- * @property {{ tankIndex: number, segmentIndex: number, phase: number, maxFuelKg: number, currentFuelKg: number, dryMassKg: number }[]} fuelTanks
+ * @property {{ tankIndex: number, segmentIndex: number, partId: string, phase: number, maxFuelKg: number, currentFuelKg: number, dryMassKg: number }[]} fuelTanks
  * @property {number} referenceMassKg - masa total del cohete completo en plataforma (referencia para %)
  */
 

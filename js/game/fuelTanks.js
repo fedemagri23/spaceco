@@ -1,19 +1,14 @@
 /**
- * Propulsante por tanque (fuelTank) y masa total coherente con separación y consumo.
- * Los motores solo generan empuje si en esa fase hay al menos un tanque de combustible (en cualquier posición del segmento de etapa) con propulsante.
- * Consumo y empuje escalan linealmente con el acelerador; N motores en paralelo suman consumo y empuje.
+ * Propulsante por tanque de combustible y masa total coherente con separación y consumo.
+ * Capacidades y tasas salen de `PARTS[].sim` vía `partSimulation.js`.
  */
 
 import { buildPhasePlanFromSpec, estimatePartMassKg } from './rocketPhases.js';
-
-/** Capacidad de propulsante por pieza `fuelTank` (kg), alineada con PARTS. */
-export const FUEL_TANK_MAX_PROPELLANT_KG = 970;
-
-/** Masa en seco del tanque (estructura), kg. Total pieza ≈ dry + propulsante lleno. */
-export const FUEL_TANK_DRY_MASS_KG = 480;
-
-/** Consumo de propulsante por motor a acelerador 1 (kg/s). Varios motores: se suma. */
-export const PER_MOTOR_PROPELLANT_KG_S = 52;
+import {
+  isFuelTankPartId,
+  getFuelTankSimulation,
+  getEngineSimulation,
+} from '../config/partSimulation.js';
 
 /**
  * @param {object[]} segments
@@ -29,7 +24,7 @@ function phaseForSegmentIndex(segments, phases, segIdx) {
 }
 
 /**
- * La fase incluye al menos un segmento `fuelTank` (cualquier cuerpo de la etapa, no hace falta ser el primero sobre los motores).
+ * La fase incluye al menos un tanque de combustible con `sim` en el catálogo.
  * @param {ReturnType<typeof buildPhasePlanFromSpec>} plan
  * @param {number} phaseNum
  */
@@ -39,7 +34,7 @@ export function phasePlanHasFuelTankInPhase(plan, phaseNum) {
   const segs = plan.segments;
   for (let i = ph.segmentStart + 1; i <= ph.segmentEnd; i++) {
     const s = segs[i];
-    if (s && s.kind === 'body' && s.id === 'fuelTank') return true;
+    if (s && s.kind === 'body' && isFuelTankPartId(s.id)) return true;
   }
   return false;
 }
@@ -90,17 +85,19 @@ export function initRocketPropellantFromPadSpec(spec, entity) {
   entity.fuelTanks = [];
   let n = 0;
   segments.forEach((seg, idx) => {
-    if (seg.kind === 'body' && seg.id === 'fuelTank') {
-      n += 1;
-      entity.fuelTanks.push({
-        tankIndex: n,
-        segmentIndex: idx,
-        phase: phaseForSegmentIndex(segments, phases, idx),
-        maxFuelKg: FUEL_TANK_MAX_PROPELLANT_KG,
-        currentFuelKg: FUEL_TANK_MAX_PROPELLANT_KG,
-        dryMassKg: FUEL_TANK_DRY_MASS_KG,
-      });
-    }
+    if (seg.kind !== 'body' || !isFuelTankPartId(seg.id)) return;
+    const cfg = getFuelTankSimulation(seg.id);
+    if (!cfg) return;
+    n += 1;
+    entity.fuelTanks.push({
+      tankIndex: n,
+      segmentIndex: idx,
+      partId: seg.id,
+      phase: phaseForSegmentIndex(segments, phases, idx),
+      maxFuelKg: cfg.propellantMaxKg,
+      currentFuelKg: cfg.propellantMaxKg,
+      dryMassKg: cfg.dryMassKg,
+    });
   });
   recomputeEntityMass(entity, plan);
 }
@@ -125,9 +122,9 @@ export function recomputeEntityMass(entity, plan) {
     for (let idx = ph.segmentStart + 1; idx <= ph.segmentEnd; idx++) {
       const seg = segs[idx];
       if (!seg || seg.kind !== 'body') continue;
-      if (seg.id === 'fuelTank') {
+      if (isFuelTankPartId(seg.id)) {
         const tank = tankBySeg.get(idx);
-        m += tank ? tank.dryMassKg + tank.currentFuelKg : estimatePartMassKg('fuelTank');
+        m += tank ? tank.dryMassKg + tank.currentFuelKg : estimatePartMassKg(seg.id);
       } else {
         m += estimatePartMassKg(seg.id);
       }
@@ -147,8 +144,7 @@ export function removeFuelTanksForSeparatedPhase(entity, phaseNum) {
 }
 
 /**
- * Consume propulsante en la fase activa: N motores × tasa por motor × acelerador.
- * Reparte el gasto entre los tanques con propulsante en esa fase.
+ * Consume propulsante en la fase activa: tasa según tipo de motor × N × acelerador.
  * @param {object} entity
  * @param {ReturnType<typeof buildPhasePlanFromSpec>} plan
  * @param {number | null} activePhase
@@ -162,10 +158,15 @@ export function burnFuelForActiveStage(entity, plan, activePhase, throttle01, dt
   const motorCount = getMotorCountForPhase(plan, activePhase);
   if (motorCount <= 0) return;
 
+  const ph = plan.phases.find((p) => p.phase === activePhase);
+  const motorSeg = ph ? plan.segments[ph.segmentStart] : null;
+  const engineId = motorSeg && motorSeg.kind === 'motors' ? motorSeg.engineId : 'engine';
+  const rate = getEngineSimulation(engineId).propellantKgPerS;
+
   const tanks = entity.fuelTanks.filter((t) => t.phase === activePhase && t.currentFuelKg > 0);
   if (!tanks.length) return;
 
-  const totalBurn = PER_MOTOR_PROPELLANT_KG_S * motorCount * throttle01 * dt;
+  const totalBurn = rate * motorCount * throttle01 * dt;
   const per = totalBurn / tanks.length;
   tanks.forEach((t) => {
     t.currentFuelKg = Math.max(0, t.currentFuelKg - per);

@@ -7,6 +7,7 @@ import { gameState } from '../game/state.js';
 import { buildPhasePlanFromSpec, getActiveBottomPhase } from '../game/rocketPhases.js';
 import { activeStageCanProduceThrust } from '../game/fuelTanks.js';
 import { PAD_SURFACE_Y } from '../scene/rocketPad.js';
+import { PARTS } from '../config/parts.js';
 
 function fmt(n, decimals = 1) {
   if (!Number.isFinite(n)) return '—';
@@ -79,7 +80,8 @@ export function updateFollowHud() {
   } else {
     tanks.forEach((t) => {
       const pct = t.maxFuelKg > 0 ? (100 * t.currentFuelKg) / t.maxFuelKg : 0;
-      tankRows += `<div class="fh-row fh-tank"><span class="fh-k">Tanque F${t.phase} · #${t.tankIndex}</span><span class="fh-v">${fmt(t.currentFuelKg, 0)} / ${fmt(t.maxFuelKg, 0)} kg · ${fmt(pct, 0)}%</span></div>`;
+      const pname = t.partId && PARTS[t.partId]?.name ? PARTS[t.partId].name : 'Tanque';
+      tankRows += `<div class="fh-row fh-tank"><span class="fh-k">${pname} · F${t.phase} · #${t.tankIndex}</span><span class="fh-v">${fmt(t.currentFuelKg, 0)} / ${fmt(t.maxFuelKg, 0)} kg · ${fmt(pct, 0)}%</span></div>`;
     });
   }
 

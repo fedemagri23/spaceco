@@ -69,6 +69,12 @@ function applySequenceAction(raw) {
     separatePhaseNumber(Number(m[1]));
     return;
   }
+  m = s.match(/^SPIN\s+([-+]?\d+)$/i);
+  if (m) {
+    const angle = Number(m[1]); 
+    gameState.rocketEntity.angleDeg += angle;
+    return;
+  }
 }
 
 function separatePhaseNumber(phaseNum) {
@@ -232,7 +238,7 @@ export function updateFlightSimulation(nowMs) {
     if (ph) {
       const seg = cachedPlan.segments[ph.segmentStart];
       if (seg && seg.kind === 'motors') {
-        thrustN = estimateClusterThrustNewtons(seg.count, th);
+        thrustN = estimateClusterThrustNewtons(seg.count, th, seg.engineId);
       }
     }
   }

@@ -6,22 +6,20 @@
 import { PARTS } from '../config/parts.js';
 import { normalizeRocketSpec } from './rocketBuild.js';
 
-/** Masa aproximada por pieza (kg) para simulación. */
-const PART_MASS_KG = {
-  engine: 411,
-  raptorEngine: 320,
-  booster: 920,
-  fuelTank: 1450,
-  payloadBay: 680,
-  capsule: 4200,
-};
-
 /**
+ * Masa usada en simulación para una pieza (desde `PARTS[id].sim`).
  * @param {string} partKey
  * @returns {number}
  */
 export function estimatePartMassKg(partKey) {
-  return PART_MASS_KG[partKey] ?? 500;
+  const p = PARTS[partKey];
+  const s = p?.sim;
+  if (!s) return 500;
+  if (typeof s.propellantMaxKg === 'number') {
+    return typeof s.fullMassKg === 'number' ? s.fullMassKg : (s.dryMassKg ?? 0) + s.propellantMaxKg;
+  }
+  if (typeof s.massKg === 'number') return s.massKg;
+  return 500;
 }
 
 /**

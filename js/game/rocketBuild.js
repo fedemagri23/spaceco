@@ -6,6 +6,7 @@
  */
 
 import { PARTS } from '../config/parts.js';
+import { isFuelTankPartId } from '../config/partSimulation.js';
 
 /** @typedef {{ kind: 'motors', engineId: string, count: number }} MotorClusterSeg */
 /** @typedef {{ kind: 'body', id: string }} BodySeg */
@@ -25,7 +26,7 @@ export const MAX_MOTORS_PER_CLUSTER = 4;
 export function mustHaveMotorsBlockBelow(partKey) {
   const p = PARTS[partKey];
   if (!p || typeof p.maxParallelMotors !== 'number') return false;
-  return partKey !== 'capsule' && partKey !== 'payloadBay' && partKey !== 'fuelTank';
+  return partKey !== 'capsule' && partKey !== 'payloadBay' && !isFuelTankPartId(partKey);
 }
 
 /**

@@ -2,6 +2,8 @@
  * Física de vuelo: gravedad, empuje, roce aerodinámico e integración.
  */
 
+import { getEngineSimulation } from '../config/partSimulation.js';
+
 /** Radio medio terrestre (m), modelo esférico para variación de g con la altitud. */
 export const EARTH_RADIUS_M = 6_371_000;
 
@@ -99,12 +101,13 @@ export function integrateEuler(pos, vel, acc, dt) {
 }
 
 /**
- * Empuje total aproximado por bloque de motores (N). Placeholder por motor.
+ * Empuje total por bloque de motores (N), según tipo de motor en `PARTS[].sim`.
  * @param {number} motorCount
  * @param {number} throttle01
+ * @param {string} engineId
  * @returns {number}
  */
-export function estimateClusterThrustNewtons(motorCount, throttle01) {
-  const perMotor = 800000;
+export function estimateClusterThrustNewtons(motorCount, throttle01, engineId) {
+  const { thrustN: perMotor } = getEngineSimulation(engineId);
   return perMotor * motorCount * Math.max(0, Math.min(1, throttle01));
 }
