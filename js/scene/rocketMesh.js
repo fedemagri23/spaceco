@@ -7,6 +7,12 @@ import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
 import { PARTS } from '../config/parts.js';
 
 /**
+ * Escala uniforme del modelo respecto a `h`/`r` en `PARTS`.
+ * La plataforma (~38×38) y las miniaturas UI encuadran bien con ~2.
+ */
+export const ROCKET_MESH_VISUAL_SCALE = 1.5;
+
+/**
  * @param {string[]} parts - ids en orden de apilado (base → punta)
  * @returns {THREE.Group}
  */
@@ -45,5 +51,6 @@ export function buildRocketMesh(parts) {
 
     yOff += p.h;
   });
+  g.scale.setScalar(ROCKET_MESH_VISUAL_SCALE);
   return g;
 }
