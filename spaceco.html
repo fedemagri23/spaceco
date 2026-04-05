@@ -26,6 +26,11 @@
       <div class="lbl">Seleccionar cohete</div>
       <div class="rocket-list" id="rocket-list"></div>
       <button type="button" class="btn" id="deploy-btn" onclick="deployRocket()">Desplegar en plataforma</button>
+      <div id="pad-payload-block" class="pad-payload-block" style="display:none;">
+        <div class="lbl" style="margin-top:18px;">Carga útil — bahía</div>
+        <div id="pad-payload-hint" class="build-hint" aria-live="polite"></div>
+        <div id="pad-payload-list" class="pad-payload-list"></div>
+      </div>
     </div>
   </div>
 
@@ -52,6 +57,17 @@
           <button type="button" class="btn green" onclick="saveRocket()">Guardar cohete</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="panel" id="storage-panel">
+    <div class="panel-hdr">
+      <span class="panel-title">/// Almacén de carga útil</span>
+      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+    </div>
+    <div class="panel-body">
+      <div class="lbl">Inventario (satélites y carga para bahía)</div>
+      <div class="cargo-inventory-grid" id="cargo-inventory-grid"></div>
     </div>
   </div>
 

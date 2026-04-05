@@ -252,6 +252,16 @@ export function createBuildings() {
   registerClickable(box(48, 8, 48, 0x4ba8fa, CC_X, 28, CC_Z), 'control_tower', ':: Torre de control');
   registerClickable(box(48, 4, 48, 0x9f9f9f, CC_X, 36, CC_Z), 'control_tower', ':: Torre de control');
   buildAntenna(CC_X - 14, 40, CC_Z + 14, 3);
-  registerClickable(box(22, 8, 22, 0x9f9f9f, CC_X+8, 40, CC_Z+8), 'control_tower', ':: Torre de control');
+  registerClickable(box(22, 8, 22, 0x9f9f9f, CC_X + 8, 40, CC_Z + 8), 'control_tower', ':: Torre de control');
   buildParabolicAntenna(CC_X + 8, 48, CC_Z + 8, 10);
+
+  const S_X = 65;
+  const S_Z = 30;
+
+  registerClickable(box(78, 16, 48, 0x9f9f9f, S_X, 0, S_Z), 'storage', ':: Almacén');
+  registerClickable(box(84, 8, 54, 0x2f2f2f, S_X, 16, S_Z), 'storage', ':: Almacén');
+  registerClickable(box(78, 2, 48, 0x9f9f9f, S_X, 24, S_Z), 'storage', ':: Almacén');
+  box(10, 12, 2, 0x4ba8fa, S_X - 24, 0, S_Z + 24);
+  box(10, 6, 2, 0x4ba8fa, S_X, 5, S_Z + 24);
+  box(10, 6, 2, 0x4ba8fa, S_X + 20, 5, S_Z + 24);
 }

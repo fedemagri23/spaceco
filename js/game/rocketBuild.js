@@ -181,6 +181,23 @@ export function appendPartOrError(build, partKey, inv) {
 }
 
 /**
+ * Simula `appendPartOrError` sin mutar `build` ni `inv` (para UI: piezas no colocables).
+ * @param {BuildSegment[]} build
+ * @param {string} partKey
+ * @param {Record<string, number>} inv
+ * @returns {string | null} mensaje de error, o null si se podría colocar
+ */
+export function peekAppendPartError(build, partKey, inv) {
+  const buildCopy = build.map((s) =>
+    s.kind === 'motors'
+      ? { kind: 'motors', engineId: s.engineId, count: s.count }
+      : { kind: 'body', id: s.id },
+  );
+  const invCopy = { ...inv };
+  return appendPartOrError(buildCopy, partKey, invCopy);
+}
+
+/**
  * Elimina un segmento por índice y devuelve piezas al inventario.
  * @param {BuildSegment[]} build
  * @param {number} index

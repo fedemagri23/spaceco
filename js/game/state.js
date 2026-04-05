@@ -6,6 +6,7 @@
  */
 
 import { PARTS } from '../config/parts.js';
+import { PAYLOAD_ITEMS } from '../config/payloadItems.js';
 
 /** Inventario inicial: claves deben coincidir con PARTS. */
 function initialInventory() {
@@ -13,6 +14,14 @@ function initialInventory() {
   Object.keys(PARTS).forEach((k) => { inv[k] = 0; });
   Object.assign(inv, { engine: 3, booster: 2, fuelTank: 4, payloadBay: 1, capsule: 2 });
   return inv;
+}
+
+/** Inventario de carga útil (satélites, etc.): claves de `PAYLOAD_ITEMS`. */
+function initialCargoInventory() {
+  const cargo = {};
+  Object.keys(PAYLOAD_ITEMS).forEach((k) => { cargo[k] = 0; });
+  cargo.weatherControlSatellite = 1;
+  return cargo;
 }
 
 /**
@@ -23,14 +32,19 @@ function initialInventory() {
  *   savedRockets: { name: string, build?: unknown, parts?: string[] }[],
  *   build: { kind: string, engineId?: string, count?: number, id?: string }[],
  *   selectedRocket: number,
- *   padRocket: { name: string, build?: unknown, parts?: string[] } | null
+ *   padRocket: { name: string, build?: unknown, parts?: string[] } | null,
+ *   cargoInv: Record<string, number>,
+ *   padPayloadId: string | null
  * }}
  */
 export const gameState = {
   money: 1000000,
   inv: initialInventory(),
+  cargoInv: initialCargoInventory(),
   savedRockets: [],
   build: [],
   selectedRocket: -1,
   padRocket: null,
+  /** Id de `PAYLOAD_ITEMS` montado en el cohete de la plataforma (null = bahía vacía). */
+  padPayloadId: null,
 };

@@ -9,6 +9,7 @@ import { activeUICanvases } from './ui3d.js';
 import { closeAllPanels } from './closePanels.js';
 import {
   appendPartOrError,
+  peekAppendPartError,
   buildSegmentLabels,
   removeSegmentAndAbove,
   isEngineKey,
@@ -82,29 +83,34 @@ export function drawPartsGrid() {
   const el = document.getElementById('parts-grid');
   if (!el) return;
   el.innerHTML = '';
-  Object.entries(PARTS).forEach(([key, p]) => {
+
+  const available = Object.entries(PARTS).filter(([k]) => (gameState.inv[k] || 0) > 0);
+  if (!available.length) {
+    el.innerHTML = '<div class="empty">Sin piezas en inventario.<br>Compra en el Centro de Distribución.</div>';
+    return;
+  }
+
+  available.forEach(([key, p]) => {
     const stock = gameState.inv[key] || 0;
+    const blockedByRules = peekAppendPartError(gameState.build, key, gameState.inv) !== null;
     const card = document.createElement('div');
-    card.className = `part-card${stock === 0 ? ' depleted' : ''}`;
+    card.className = `part-card${blockedByRules ? ' rule-blocked' : ''}`;
     card.innerHTML = `
       <canvas class="p-canvas" width="50" height="50"></canvas>
       <div class="p-name">${p.name}</div>
       <div class="p-stock">Stock: ${stock}</div>`;
 
-    card.addEventListener('mouseenter', () => {
-      if (stock > 0) showPartTooltip(key);
-    });
+    card.addEventListener('mouseenter', () => showPartTooltip(key));
     card.addEventListener('mouseleave', hidePartTooltip);
 
-    if (stock > 0) {
-      card.onclick = () => {
-        const err = appendPartOrError(gameState.build, key, gameState.inv);
-        if (err) setBuildHint(err);
-        else setBuildHint('');
-        drawPartsGrid();
-        drawAsmStack();
-      };
-    }
+    card.onclick = () => {
+      const err = appendPartOrError(gameState.build, key, gameState.inv);
+      if (err) setBuildHint(err);
+      else setBuildHint('');
+      drawPartsGrid();
+      drawAsmStack();
+    };
+
     el.appendChild(card);
 
     const cvs = card.querySelector('.p-canvas');

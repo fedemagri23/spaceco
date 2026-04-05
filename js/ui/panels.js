@@ -7,6 +7,7 @@ import { closeAllPanels } from './closePanels.js';
 import { drawRocketList, deployRocket } from './launchPanel.js';
 import { drawPartsGrid, drawAsmStack, saveRocket } from './warehousePanel.js';
 import { drawStoreGrid, buyPart } from './storePanel.js';
+import { drawCargoInventory } from './storagePanel.js';
 
 /**
  * Muestra overlay + panel y refresca contenido dinámico si aplica.
@@ -21,6 +22,7 @@ export function openPanel(id) {
     drawAsmStack();
   }
   if (id === 'store-panel') drawStoreGrid();
+  if (id === 'storage-panel') drawCargoInventory();
 }
 
 /**

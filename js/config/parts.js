@@ -10,7 +10,7 @@ export const PARTS = {
   engine: {
     name: 'Motor Merlin',
     color: 0x778899,
-    h: 4,
+    h: 3,
     r: 2.0,
     shape: 'cone',
     props: {
@@ -24,7 +24,7 @@ export const PARTS = {
   raptorEngine: {
     name: 'Motor Raptor',
     color: 0x2b2e38,
-    h: 3,
+    h: 2.5,
     r: 1.7,
     shape: 'cone',
     ringBelow: {
@@ -44,7 +44,7 @@ export const PARTS = {
     name: 'Booster SRB',
     color: 0x445566,
     h: 7,
-    r: 2.3,
+    r: 3.3,
     shape: 'cylinder',
     maxParallelMotors: 4,
     props: {
@@ -59,9 +59,9 @@ export const PARTS = {
     name: 'Tanque Comb.',
     color: 0xccccdd,
     h: 9,
-    r: 2.1,
+    r: 3.1,
     shape: 'cylinder',
-    maxParallelMotors: 1,
+    maxParallelMotors: 2,
     props: {
       volumen: '834 L',
       capacidad: '970 kg (RP-1)',
@@ -74,7 +74,7 @@ export const PARTS = {
     name: 'Bahía Carga',
     color: 0xbb8833,
     h: 5,
-    r: 2.1,
+    r: 3.1,
     shape: 'cylinder',
     maxParallelMotors: 2,
     props: {
@@ -88,8 +88,8 @@ export const PARTS = {
   capsule: {
     name: 'Cápsula',
     color: 0xff6600,
-    h: 5,
-    r: 2.0,
+    h: 6,
+    r: 3.0,
     shape: 'cone',
     /** Límite si va sobre un bloque de motores; si va sobre cuerpo, no se usa. */
     maxParallelMotors: 4,
