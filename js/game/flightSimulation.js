@@ -18,6 +18,7 @@ import {
   thrustAccelerationFromNewtons,
   integrateEuler,
   estimateClusterThrustNewtons,
+  gravityAtAltitudeMS2,
 } from './physics.js';
 import { getPadRocketGroup, PAD_SURFACE_Y, PAD_X, PAD_Z } from '../scene/rocketPad.js';
 import { ROCKET_MESH_VISUAL_SCALE } from '../scene/rocketMesh.js';
@@ -212,6 +213,7 @@ export function updateFlightSimulation(nowMs) {
   processPendingAltitudeEvents();
 
   const altM = ent.position.y - PAD_SURFACE_Y;
+  ent.gravity = gravityAtAltitudeMS2(altM);
   const rho = airDensityAtAltitude(altM);
 
   const active = getActiveBottomPhase(ent.separatedPhases, ent.maxPhase);
@@ -235,7 +237,7 @@ export function updateFlightSimulation(nowMs) {
     }
   }
 
-  const g = ent.gravity;
+  const g = ent.gravity; // ya actualizado con g(h) según altitud
   const acc = {
     x: 0,
     y: -g,

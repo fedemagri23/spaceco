@@ -18,14 +18,14 @@ export const MAX_MOTORS_PER_CLUSTER = 4;
 
 /**
  * Cuerpos que no pueden ir justo sobre otro cuerpo: deben ir sobre un bloque de motores.
- * Cápsula y bahía de carga son la excepción (pueden ir sobre cuerpo sin motores entre medias).
+ * Excepciones: cápsula, bahía de carga y tanque de combustible (pueden ir sobre otro cuerpo de la misma etapa).
  * @param {string} partKey
  * @returns {boolean}
  */
 export function mustHaveMotorsBlockBelow(partKey) {
   const p = PARTS[partKey];
   if (!p || typeof p.maxParallelMotors !== 'number') return false;
-  return partKey !== 'capsule' && partKey !== 'payloadBay';
+  return partKey !== 'capsule' && partKey !== 'payloadBay' && partKey !== 'fuelTank';
 }
 
 /**

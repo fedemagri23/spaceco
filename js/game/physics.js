@@ -2,6 +2,25 @@
  * Física de vuelo: gravedad, empuje, roce aerodinámico e integración.
  */
 
+/** Radio medio terrestre (m), modelo esférico para variación de g con la altitud. */
+export const EARTH_RADIUS_M = 6_371_000;
+
+/** Gravedad en superficie de referencia (plataforma), m/s². */
+export const GRAVITY_SURFACE_MS2 = 9.80665;
+
+/**
+ * Magnitud de la gravedad a altitud h sobre la superficie de referencia:
+ * \( g(h) = g_0 \bigl(\frac{R}{R+h}\bigr)^2 \)
+ * @param {number} altitudeAboveSurfaceM - metros sobre la plataforma (AGL coherente con el vuelo)
+ * @returns {number}
+ */
+export function gravityAtAltitudeMS2(altitudeAboveSurfaceM) {
+  const h = Math.max(0, altitudeAboveSurfaceM);
+  const R = EARTH_RADIUS_M;
+  const ratio = R / (R + h);
+  return GRAVITY_SURFACE_MS2 * ratio * ratio;
+}
+
 /** Densidad del aire a nivel del suelo (kg/m³) — modelo simplificado. */
 export const AIR_DENSITY_SEA_LEVEL = 1.225;
 

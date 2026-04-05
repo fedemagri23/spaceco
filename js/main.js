@@ -16,6 +16,7 @@ import { initUI3D, renderUICanvases } from './ui/ui3d.js';
 import { attachGlobalHandlers } from './ui/panels.js';
 import { refreshMoneyHud } from './ui/hud.js';
 import { initCameraControls, updateFollowCameraFromRocket } from './input/camera.js';
+import { updateFollowAtmosphereFromRocket } from './scene/followAtmosphere.js';
 import { updateFollowHud } from './ui/followHud.js';
 import { doHover, doClick } from './input/raycast.js';
 import { updateFlightSimulation } from './game/flightSimulation.js';
@@ -46,6 +47,7 @@ function bootstrap() {
     const now = performance.now();
     updateFlightSimulation(now);
     updateFollowCameraFromRocket();
+    updateFollowAtmosphereFromRocket();
     updateFollowHud();
     renderUICanvases();
     renderer.render(scene, camera);

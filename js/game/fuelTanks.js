@@ -1,6 +1,6 @@
 /**
  * Propulsante por tanque (fuelTank) y masa total coherente con separación y consumo.
- * Los motores solo generan empuje si la fase incluye al menos un tanque encima y queda propulsante.
+ * Los motores solo generan empuje si en esa fase hay al menos un tanque de combustible (en cualquier posición del segmento de etapa) con propulsante.
  * Consumo y empuje escalan linealmente con el acelerador; N motores en paralelo suman consumo y empuje.
  */
 
@@ -29,11 +29,11 @@ function phaseForSegmentIndex(segments, phases, segIdx) {
 }
 
 /**
- * La fase tiene al menos un segmento `fuelTank` sobre el bloque de motores.
+ * La fase incluye al menos un segmento `fuelTank` (cualquier cuerpo de la etapa, no hace falta ser el primero sobre los motores).
  * @param {ReturnType<typeof buildPhasePlanFromSpec>} plan
  * @param {number} phaseNum
  */
-export function phasePlanHasFuelTankAboveMotors(plan, phaseNum) {
+export function phasePlanHasFuelTankInPhase(plan, phaseNum) {
   const ph = plan.phases.find((p) => p.phase === phaseNum);
   if (!ph) return false;
   const segs = plan.segments;
@@ -61,7 +61,7 @@ export function activePhaseHasPropellantRemaining(entity, phaseNum) {
  */
 export function activeStageCanProduceThrust(entity, plan, phaseNum) {
   if (phaseNum == null || !plan) return false;
-  if (!phasePlanHasFuelTankAboveMotors(plan, phaseNum)) return false;
+  if (!phasePlanHasFuelTankInPhase(plan, phaseNum)) return false;
   return activePhaseHasPropellantRemaining(entity, phaseNum);
 }
 
@@ -157,7 +157,7 @@ export function removeFuelTanksForSeparatedPhase(entity, phaseNum) {
  */
 export function burnFuelForActiveStage(entity, plan, activePhase, throttle01, dt) {
   if (activePhase == null || throttle01 <= 0 || dt <= 0) return;
-  if (!phasePlanHasFuelTankAboveMotors(plan, activePhase)) return;
+  if (!phasePlanHasFuelTankInPhase(plan, activePhase)) return;
 
   const motorCount = getMotorCountForPhase(plan, activePhase);
   if (motorCount <= 0) return;

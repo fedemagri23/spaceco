@@ -3,6 +3,7 @@
  */
 
 import { PAD_X, PAD_Z, PAD_SURFACE_Y } from '../scene/rocketPad.js';
+import { GRAVITY_SURFACE_MS2 } from './physics.js';
 
 /**
  * @typedef {Object} Vec3
@@ -36,7 +37,7 @@ export function createRocketEntityState() {
     velocity: { x: 0, y: 0, z: 0 },
     acceleration: { x: 0, y: 0, z: 0 },
     mass: 50000,
-    gravity: 9.81,
+    gravity: GRAVITY_SURFACE_MS2,
     angleDeg: 90,
     throttleByPhase: {},
     separatedPhases: new Set(),
@@ -58,7 +59,7 @@ export function resetRocketEntityToPad() {
     velocity: { x: 0, y: 0, z: 0 },
     acceleration: { x: 0, y: 0, z: 0 },
     mass: 50000,
-    gravity: 9.81,
+    gravity: GRAVITY_SURFACE_MS2,
     angleDeg: 90,
     throttleByPhase: {},
     separatedPhases: new Set(),
