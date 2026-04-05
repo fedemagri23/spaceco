@@ -8,6 +8,7 @@ import { PAYLOAD_ITEMS, PAYLOAD_BAY_MAX_KG } from '../config/payloadItems.js';
 import { buildRocketMesh } from '../scene/rocketMesh.js';
 import { buildPayloadMesh } from '../scene/payloadMesh.js';
 import { placeRocketOnPad } from '../scene/rocketPad.js';
+import { resetRocketEntityToPad } from '../game/rocketEntity.js';
 import { activeUICanvases } from './ui3d.js';
 import { closeAllPanels } from './closePanels.js';
 import { normalizeRocketSpec, buildSegmentLabels } from '../game/rocketBuild.js';
@@ -215,5 +216,6 @@ export function deployRocket() {
   gameState.padRocket = gameState.savedRockets[gameState.selectedRocket];
   const spec = rocketSpecForList(gameState.padRocket);
   placeRocketOnPad(spec);
+  gameState.rocketEntity = resetRocketEntityToPad();
   closeAllPanels();
 }

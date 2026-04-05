@@ -8,6 +8,7 @@ import { drawRocketList, deployRocket } from './launchPanel.js';
 import { drawPartsGrid, drawAsmStack, saveRocket } from './warehousePanel.js';
 import { drawStoreGrid, buyPart } from './storePanel.js';
 import { drawCargoInventory } from './storagePanel.js';
+import { syncControlTowerPanel, onLaunchButtonClick, saveLaunchSequenceFromEditor } from './controlTowerPanel.js';
 
 /**
  * Muestra overlay + panel y refresca contenido dinámico si aplica.
@@ -23,6 +24,7 @@ export function openPanel(id) {
   }
   if (id === 'store-panel') drawStoreGrid();
   if (id === 'storage-panel') drawCargoInventory();
+  if (id === 'control-tower-panel') syncControlTowerPanel();
 }
 
 /**
@@ -40,4 +42,6 @@ export function attachGlobalHandlers() {
   window.deployRocket = deployRocket;
   window.buyPart = buyPart;
   window.saveRocket = saveRocket;
+  window.onLaunchButtonClick = onLaunchButtonClick;
+  window.saveLaunchSequence = saveLaunchSequenceFromEditor;
 }

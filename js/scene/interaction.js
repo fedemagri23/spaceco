@@ -13,7 +13,7 @@ export const clickables = [];
 /**
  * Registra una malla como interactiva en la escena principal.
  * @param {THREE.Mesh} mesh
- * @param {string} type - ej. 'launchpad' | 'warehouse' | 'store' | 'storage'
+ * @param {string} type - ej. 'launchpad' | 'warehouse' | 'store' | 'storage' | 'control_tower'
  * @param {string} label - texto del tooltip flotante
  * @returns {THREE.Mesh}
  */

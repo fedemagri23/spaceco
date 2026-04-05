@@ -71,6 +71,25 @@
     </div>
   </div>
 
+  <div class="panel panel-wide" id="control-tower-panel">
+    <div class="panel-hdr">
+      <span class="panel-title">/// Torre de control</span>
+      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+    </div>
+    <div class="panel-body">
+      <div class="control-tower-actions">
+        <button type="button" class="btn btn-launch" id="launch-go-btn" onclick="onLaunchButtonClick()">Lanzamiento</button>
+      </div>
+      <div class="lbl" style="margin-top:20px;">Secuencia de lanzamiento (pseudocódigo)</div>
+      <p class="ct-hint">Una línea por evento. Ejemplo: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
+      <textarea id="launch-sequence-editor" class="launch-sequence-editor" rows="14" spellcheck="false" wrap="off" aria-label="Secuencia de lanzamiento"></textarea>
+      <div class="ct-editor-toolbar">
+        <button type="button" class="btn btn-save-seq" onclick="saveLaunchSequence()">Guardar secuencia</button>
+        <span id="launch-sequence-save-status" class="ct-save-status" aria-live="polite"></span>
+      </div>
+    </div>
+  </div>
+
   <div class="panel" id="store-panel">
     <div class="panel-hdr">
       <span class="panel-title">/// Centro de Distribución</span>

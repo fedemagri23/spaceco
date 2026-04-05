@@ -7,6 +7,9 @@
 
 import { PARTS } from '../config/parts.js';
 import { PAYLOAD_ITEMS } from '../config/payloadItems.js';
+import { DEFAULT_LAUNCH_SEQUENCE_SCRIPT } from '../config/launchSequence.js';
+import { createRocketEntityState } from './rocketEntity.js';
+import { applyLaunchSequenceMapsToState } from './launchSequenceMaps.js';
 
 /** Inventario inicial: claves deben coincidir con PARTS. */
 function initialInventory() {
@@ -34,7 +37,11 @@ function initialCargoInventory() {
  *   selectedRocket: number,
  *   padRocket: { name: string, build?: unknown, parts?: string[] } | null,
  *   cargoInv: Record<string, number>,
- *   padPayloadId: string | null
+ *   padPayloadId: string | null,
+ *   launchSequenceScript: string,
+ *   launchSequenceTimeMap: Map<number, string[]>,
+ *   launchSequenceAltitudeMap: Map<number, string[]>,
+ *   rocketEntity: object
  * }}
  */
 export const gameState = {
@@ -47,4 +54,14 @@ export const gameState = {
   padRocket: null,
   /** Id de `PAYLOAD_ITEMS` montado en el cohete de la plataforma (null = bahía vacía). */
   padPayloadId: null,
+  /** Pseudocódigo de secuencia de lanzamiento (Torre de control). */
+  launchSequenceScript: DEFAULT_LAUNCH_SEQUENCE_SCRIPT,
+  /** Acciones por instante T+ (segundos), en orden de aparición en el texto. */
+  launchSequenceTimeMap: new Map(),
+  /** Acciones por altitud (metros), en orden de aparición en el texto. */
+  launchSequenceAltitudeMap: new Map(),
+  /** Cohete activo (plataforma / vuelo): estado físico. */
+  rocketEntity: createRocketEntityState(),
 };
+
+applyLaunchSequenceMapsToState(gameState.launchSequenceScript, gameState);
