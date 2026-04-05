@@ -28,8 +28,22 @@ export function buildRocketMesh(parts) {
     );
     m.position.y = yOff + p.h / 2;
     m.castShadow = true;
-    yOff += p.h;
     g.add(m);
+
+    if (p.ringBelow) {
+      const rb = p.ringBelow;
+      const ringGeo = new THREE.TorusGeometry(rb.majorR, rb.tube, 8, 16);
+      const ring = new THREE.Mesh(
+        ringGeo,
+        new THREE.MeshLambertMaterial({ color: rb.color, flatShading: true }),
+      );
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = yOff - rb.tube * 0.5;
+      ring.castShadow = true;
+      g.add(ring);
+    }
+
+    yOff += p.h;
   });
   return g;
 }

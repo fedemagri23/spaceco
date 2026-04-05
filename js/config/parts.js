@@ -21,6 +21,25 @@ export const PARTS = {
       peso: '411 kg',
     },
   },
+  raptorEngine: {
+    name: 'Motor Raptor',
+    color: 0x2b2e38,
+    h: 3,
+    r: 1.7,
+    shape: 'cone',
+    ringBelow: {
+      color: 0xcc2222,
+      majorR: 1.55,
+      tube: 0.12,
+    },
+    props: {
+      aceleración: '3.0 g',
+      confianza: '98.7%',
+      consumo: '1.0 L/s',
+      empuje: '840 kN',
+      peso: '320 kg',
+    },
+  },
   booster: {
     name: 'Booster SRB',
     color: 0x445566,
@@ -81,6 +100,7 @@ export const PARTS = {
 /** Precio en dinero del juego por id de pieza (debe existir en PARTS). */
 export const PART_PRICES = {
   engine: 50000,
+  raptorEngine: 67000,
   booster: 75000,
   fuelTank: 45000,
   payloadBay: 60000,
