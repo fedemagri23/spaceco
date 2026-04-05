@@ -4,6 +4,23 @@
  */
 
 /**
+ * Si la acción es THROTTLE, el porcentaje debe estar en [0, 100].
+ * @param {string} action
+ * @param {number} lineNum - 1-based
+ * @returns {string | null} mensaje de error o null
+ */
+export function validateSequenceActionLine(action, lineNum) {
+  const trimmed = action.trim();
+  const m = trimmed.match(/^THROTTLE\s+(\d+)\s+(\d+(?:\.\d+)?)\s*%$/i);
+  if (!m) return null;
+  const pct = parseFloat(m[2]);
+  if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+    return `Línea ${lineNum}: THROTTLE exige porcentaje entre 0 y 100 (valor: ${m[2]})`;
+  }
+  return null;
+}
+
+/**
  * @param {string} script
  * @returns {{ timeMap: Map<number, string[]>, altitudeMap: Map<number, string[]>, errors: string[] }}
  */
@@ -28,6 +45,11 @@ export function parseLaunchSequenceScript(script) {
         errors.push(`Línea ${i + 1}: acción vacía tras T+${m[1]}s`);
         return;
       }
+      const throttleErr = validateSequenceActionLine(action, i + 1);
+      if (throttleErr) {
+        errors.push(throttleErr);
+        return;
+      }
       if (!timeMap.has(t)) timeMap.set(t, []);
       timeMap.get(t).push(action);
       return;
@@ -39,6 +61,11 @@ export function parseLaunchSequenceScript(script) {
       const action = (m[2] || '').trim();
       if (!action) {
         errors.push(`Línea ${i + 1}: acción vacía tras ALTITUDE ${m[1]}m`);
+        return;
+      }
+      const throttleErr = validateSequenceActionLine(action, i + 1);
+      if (throttleErr) {
+        errors.push(throttleErr);
         return;
       }
       if (!altitudeMap.has(alt)) altitudeMap.set(alt, []);
@@ -72,12 +99,6 @@ export function applyLaunchSequenceMapsToState(script, gameStateSlice) {
   });
   altitudeMap.forEach((actions, alt) => {
     gameStateSlice.launchSequenceAltitudeMap.set(alt, [...actions]);
-  });
-
-  console.log('[LaunchSequence] mapas actualizados', {
-    tiempo: Object.fromEntries(gameStateSlice.launchSequenceTimeMap),
-    altitud: Object.fromEntries(gameStateSlice.launchSequenceAltitudeMap),
-    avisosParseo: errors.length ? errors : undefined,
   });
 
   return errors;

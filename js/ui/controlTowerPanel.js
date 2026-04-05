@@ -1,9 +1,12 @@
 /**
- * Torre de control: secuencia de lanzamiento (pseudocódigo) y botón de lanzamiento.
+ * Torre de control: secuencia de lanzamiento y arranque de simulación.
  */
 
 import { gameState } from '../game/state.js';
 import { applyLaunchSequenceMapsToState } from '../game/launchSequenceMaps.js';
+import { startFlightSimulation } from '../game/flightSimulation.js';
+import { closeAllPanels } from './closePanels.js';
+import { isCameraFollowMode } from '../input/camera.js';
 
 let editorBound = false;
 
@@ -28,11 +31,21 @@ function setSaveStatus(message, isError) {
 /**
  * Sincroniza el textarea con el estado al abrir el panel.
  */
+export function syncControlTowerCameraButtons() {
+  const btnFollow = document.getElementById('btn-cam-follow');
+  const btnFree = document.getElementById('btn-cam-free');
+  if (!btnFollow || !btnFree) return;
+  const on = isCameraFollowMode();
+  btnFollow.style.display = on ? 'none' : '';
+  btnFree.style.display = on ? '' : 'none';
+}
+
 export function syncControlTowerPanel() {
   bindEditorOnce();
   const ta = document.getElementById('launch-sequence-editor');
   if (ta) ta.value = gameState.launchSequenceScript;
   setSaveStatus('', false);
+  syncControlTowerCameraButtons();
 }
 
 /**
@@ -50,9 +63,47 @@ export function saveLaunchSequenceFromEditor() {
   }
 }
 
+function runCountdownOverlay() {
+  return new Promise((resolve) => {
+    const el = document.getElementById('launch-countdown-overlay');
+    const text = el?.querySelector('.launch-countdown-num');
+    if (!el || !text) {
+      resolve();
+      return;
+    }
+    el.classList.add('on');
+    el.setAttribute('aria-hidden', 'false');
+    const seq = ['3', '2', '1', 'GO'];
+    let i = 0;
+    text.textContent = seq[0];
+    const id = setInterval(() => {
+      i++;
+      if (i < seq.length) {
+        text.textContent = seq[i];
+      } else {
+        clearInterval(id);
+        setTimeout(() => {
+          el.classList.remove('on');
+          el.setAttribute('aria-hidden', 'true');
+          resolve();
+        }, 450);
+      }
+    }, 1000);
+  });
+}
+
 /**
- * Botón de lanzamiento (sin efecto por ahora).
+ * Cuenta atrás 3-2-1-GO, luego T+0 y simulación de vuelo.
  */
-export function onLaunchButtonClick() {
-  /* Reservado: sistema de lanzamiento */
+export async function onLaunchButtonClick() {
+  if (gameState.flightSimRunning) return;
+  if (!gameState.padRocket) {
+    setSaveStatus('No hay cohete en la plataforma.', true);
+    return;
+  }
+  saveLaunchSequenceFromEditor();
+  applyLaunchSequenceMapsToState(gameState.launchSequenceScript, gameState);
+  closeAllPanels();
+  await runCountdownOverlay();
+  startFlightSimulation();
 }

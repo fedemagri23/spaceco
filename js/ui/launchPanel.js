@@ -9,6 +9,7 @@ import { buildRocketMesh } from '../scene/rocketMesh.js';
 import { buildPayloadMesh } from '../scene/payloadMesh.js';
 import { placeRocketOnPad } from '../scene/rocketPad.js';
 import { resetRocketEntityToPad } from '../game/rocketEntity.js';
+import { initRocketPropellantFromPadSpec } from '../game/fuelTanks.js';
 import { activeUICanvases } from './ui3d.js';
 import { closeAllPanels } from './closePanels.js';
 import { normalizeRocketSpec, buildSegmentLabels } from '../game/rocketBuild.js';
@@ -217,5 +218,6 @@ export function deployRocket() {
   const spec = rocketSpecForList(gameState.padRocket);
   placeRocketOnPad(spec);
   gameState.rocketEntity = resetRocketEntityToPad();
+  initRocketPropellantFromPadSpec(spec, gameState.rocketEntity);
   closeAllPanels();
 }

@@ -8,7 +8,13 @@ import { drawRocketList, deployRocket } from './launchPanel.js';
 import { drawPartsGrid, drawAsmStack, saveRocket } from './warehousePanel.js';
 import { drawStoreGrid, buyPart } from './storePanel.js';
 import { drawCargoInventory } from './storagePanel.js';
-import { syncControlTowerPanel, onLaunchButtonClick, saveLaunchSequenceFromEditor } from './controlTowerPanel.js';
+import {
+  syncControlTowerPanel,
+  onLaunchButtonClick,
+  saveLaunchSequenceFromEditor,
+  syncControlTowerCameraButtons,
+} from './controlTowerPanel.js';
+import { setCameraFollowMode as applyCameraFollowMode } from '../input/camera.js';
 
 /**
  * Muestra overlay + panel y refresca contenido dinámico si aplica.
@@ -44,4 +50,22 @@ export function attachGlobalHandlers() {
   window.saveRocket = saveRocket;
   window.onLaunchButtonClick = onLaunchButtonClick;
   window.saveLaunchSequence = saveLaunchSequenceFromEditor;
+  window.setCameraFollowMode = (enable) => {
+    const st = document.getElementById('launch-sequence-save-status');
+    if (enable) {
+      if (applyCameraFollowMode(true)) {
+        if (st?.classList.contains('ct-save-err') && st.textContent.includes('seguimiento')) {
+          st.textContent = '';
+          st.classList.remove('ct-save-err');
+        }
+      } else if (st) {
+        st.textContent = 'Despliega un cohete en la plataforma para usar la cámara de seguimiento.';
+        st.classList.add('ct-save-err');
+        st.classList.remove('ct-save-ok');
+      }
+    } else {
+      applyCameraFollowMode(false);
+    }
+    syncControlTowerCameraButtons();
+  };
 }

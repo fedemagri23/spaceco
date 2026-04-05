@@ -41,7 +41,8 @@ function initialCargoInventory() {
  *   launchSequenceScript: string,
  *   launchSequenceTimeMap: Map<number, string[]>,
  *   launchSequenceAltitudeMap: Map<number, string[]>,
- *   rocketEntity: object
+ *   rocketEntity: object,
+ *   flightSimRunning: boolean
  * }}
  */
 export const gameState = {
@@ -62,6 +63,8 @@ export const gameState = {
   launchSequenceAltitudeMap: new Map(),
   /** Cohete activo (plataforma / vuelo): estado físico. */
   rocketEntity: createRocketEntityState(),
+  /** Simulación de vuelo activa (bucle de lanzamiento). */
+  flightSimRunning: false,
 };
 
 applyLaunchSequenceMapsToState(gameState.launchSequenceScript, gameState);

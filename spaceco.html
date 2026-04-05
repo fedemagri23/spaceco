@@ -13,9 +13,21 @@
     <div class="hud-pill">SpaceCo // Orbital Ops</div>
     <div class="hud-pill hud-money" id="money-el">$ 1.000.000</div>
   </div>
+
+  <div id="follow-camera-hud" class="follow-camera-hud" aria-hidden="true">
+    <div class="follow-hud-hdr">
+      <span class="follow-hud-title">/// Seguimiento · telemetría</span>
+      <button type="button" class="follow-hud-exit" id="follow-hud-exit" onclick="setCameraFollowMode(false)">Cámara libre</button>
+    </div>
+    <div class="follow-hud-metrics" id="follow-hud-metrics"></div>
+  </div>
   <div id="tooltip"></div>
 
   <div id="overlay" onclick="closeAll()"></div>
+
+  <div id="launch-countdown-overlay" class="launch-countdown-overlay" aria-hidden="true">
+    <div class="launch-countdown-num">3</div>
+  </div>
 
   <div class="panel" id="launch-panel">
     <div class="panel-hdr">
@@ -79,9 +91,11 @@
     <div class="panel-body">
       <div class="control-tower-actions">
         <button type="button" class="btn btn-launch" id="launch-go-btn" onclick="onLaunchButtonClick()">Lanzamiento</button>
+        <button type="button" class="btn btn-cam-follow" id="btn-cam-follow" onclick="setCameraFollowMode(true)">Cámara seguimiento</button>
+        <button type="button" class="btn btn-cam-free" id="btn-cam-free" onclick="setCameraFollowMode(false)" style="display:none">Cámara libre</button>
       </div>
       <div class="lbl" style="margin-top:20px;">Secuencia de lanzamiento (pseudocódigo)</div>
-      <p class="ct-hint">Una línea por evento. Ejemplo: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
+      <p class="ct-hint">Una línea por evento. <code>THROTTLE fase porcentaje%</code> con porcentaje entre 0 y 100. Ej.: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
       <textarea id="launch-sequence-editor" class="launch-sequence-editor" rows="14" spellcheck="false" wrap="off" aria-label="Secuencia de lanzamiento"></textarea>
       <div class="ct-editor-toolbar">
         <button type="button" class="btn btn-save-seq" onclick="saveLaunchSequence()">Guardar secuencia</button>

@@ -15,8 +15,10 @@ import { createBuildings } from './scene/buildings.js';
 import { initUI3D, renderUICanvases } from './ui/ui3d.js';
 import { attachGlobalHandlers } from './ui/panels.js';
 import { refreshMoneyHud } from './ui/hud.js';
-import { initCameraControls } from './input/camera.js';
+import { initCameraControls, updateFollowCameraFromRocket } from './input/camera.js';
+import { updateFollowHud } from './ui/followHud.js';
 import { doHover, doClick } from './input/raycast.js';
+import { updateFlightSimulation } from './game/flightSimulation.js';
 
 function bootstrap() {
   const app = document.getElementById('app');
@@ -41,6 +43,10 @@ function bootstrap() {
 
   function loop() {
     requestAnimationFrame(loop);
+    const now = performance.now();
+    updateFlightSimulation(now);
+    updateFollowCameraFromRocket();
+    updateFollowHud();
     renderUICanvases();
     renderer.render(scene, camera);
   }
