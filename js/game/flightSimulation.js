@@ -94,11 +94,12 @@ function separatePhaseNumber(phaseNum) {
   scene.attach(pg);
 
   const v0 = ent.velocity;
+  const sepVy = Math.max(v0.y * 0.9, 0);
   debrisList.push({
     group: pg,
     velocity: {
       x: v0.x + (Math.random() - 0.5) * 0.35,
-      y: v0.y + (Math.random() - 0.5) * 0.35,
+      y: sepVy + (Math.random() - 0.5) * 0.6,
       z: v0.z + (Math.random() - 0.5) * 0.35,
     },
   });
