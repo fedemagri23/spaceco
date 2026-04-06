@@ -20,6 +20,7 @@ import {
   estimateClusterThrustNewtons,
   gravityAtAltitudeMS2,
 } from './physics.js';
+import { PARTS } from '../config/parts.js';
 import { getPadRocketGroup, PAD_SURFACE_Y, PAD_X, PAD_Z } from '../scene/rocketPad.js';
 import { ROCKET_MESH_VISUAL_SCALE } from '../scene/rocketMesh.js';
 import { updatePhaseFlames } from '../scene/rocketFlames.js';
@@ -38,6 +39,27 @@ let debrisList = [];
 
 /** @type {number} */
 let lastFrameTime = 0;
+
+/**
+ * Longitud aproximada del cohete completo (m de modelo antes de escala visual).
+ * @returns {number}
+ */
+function estimateRocketLengthM() {
+  if (!cachedPlan) return 20;
+  let h = 0;
+  cachedPlan.segments.forEach((seg) => {
+    if (seg.kind === 'motors') {
+      const p = PARTS[seg.engineId];
+      if (p?.h) h += p.h;
+      return;
+    }
+    if (seg.kind === 'body') {
+      const p = PARTS[seg.id];
+      if (p?.h) h += p.h;
+    }
+  });
+  return Math.max(8, h || 20);
+}
 
 /**
  * @param {unknown} rocket
@@ -71,8 +93,24 @@ function applySequenceAction(raw) {
   }
   m = s.match(/^SPIN\s+([-+]?\d+)$/i);
   if (m) {
-    const angle = Number(m[1]); 
-    gameState.rocketEntity.angleDeg += angle;
+    const angle = Number(m[1]);
+    const ent = gameState.rocketEntity;
+    const active = getActiveBottomPhase(ent.separatedPhases, ent.maxPhase);
+    if (active != null) {
+      ent.pendingEngineSpinDegByPhase[active] =
+        (ent.pendingEngineSpinDegByPhase[active] ?? 0) + angle;
+    }
+    return;
+  }
+  m = s.match(/^ENGSPIN\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+  if (m) {
+    const phase = Number(m[1]);
+    const angle = Number(m[2]);
+    const ent = gameState.rocketEntity;
+    if (phase >= 1 && phase <= ent.maxPhase && !ent.separatedPhases.has(phase)) {
+      ent.pendingEngineSpinDegByPhase[phase] =
+        (ent.pendingEngineSpinDegByPhase[phase] ?? 0) + angle;
+    }
     return;
   }
 }
@@ -175,6 +213,8 @@ export function startFlightSimulation() {
   const ent = gameState.rocketEntity;
   ent.separatedPhases.clear();
   ent.throttleByPhase = {};
+  ent.pendingEngineSpinDegByPhase = {};
+  ent.angularVelocityDegS = 0;
   ent.missionElapsed = 0;
   ent.velocity = { x: 0, y: 0, z: 0 };
   ent.acceleration = { x: 0, y: 0, z: 0 };
@@ -263,6 +303,37 @@ export function updateFlightSimulation(nowMs) {
 
   ent.acceleration = { ...acc };
   integrateEuler(ent.position, ent.velocity, acc, dt);
+
+  // Rotación progresiva: ENGSPIN se ejecuta como autoridad de giro del motor activo.
+  // Modelo simplificado: torque ~ thrust * brazo * sin(gimbal), con inercia de barra.
+  const activeSpinPhase = getActiveBottomPhase(ent.separatedPhases, ent.maxPhase);
+  const pendingSpinDeg = activeSpinPhase != null
+    ? (ent.pendingEngineSpinDegByPhase[activeSpinPhase] ?? 0)
+    : 0;
+  if (activeSpinPhase != null && Math.abs(pendingSpinDeg) > 1e-4 && motorsOperational && thrustN > 0) {
+    const rocketLen = estimateRocketLengthM();
+    const inertiaApprox = Math.max(1, ent.mass * rocketLen * rocketLen / 12);
+    const leverArm = Math.max(3, rocketLen * 0.42);
+    const maxGimbalRad = (4 * Math.PI) / 180;
+    const torque = thrustN * leverArm * Math.sin(maxGimbalRad);
+    const angularAccDegS2 = (torque / inertiaApprox) * (180 / Math.PI);
+    ent.angularVelocityDegS += Math.sign(pendingSpinDeg) * angularAccDegS2 * dt;
+  }
+
+  const angDamp = Math.exp(-2.6 * dt);
+  ent.angularVelocityDegS *= angDamp;
+  const freeDeltaAngle = ent.angularVelocityDegS * dt;
+  if (activeSpinPhase != null && Math.abs(pendingSpinDeg) > 1e-4) {
+    const applied = Math.sign(pendingSpinDeg)
+      * Math.min(Math.abs(freeDeltaAngle), Math.abs(pendingSpinDeg));
+    ent.angleDeg += applied;
+    ent.pendingEngineSpinDegByPhase[activeSpinPhase] = pendingSpinDeg - applied;
+    if (Math.abs(ent.pendingEngineSpinDegByPhase[activeSpinPhase]) < 1e-3) {
+      ent.pendingEngineSpinDegByPhase[activeSpinPhase] = 0;
+    }
+  } else {
+    ent.angleDeg += freeDeltaAngle;
+  }
 
   root.position.set(ent.position.x, ent.position.y, ent.position.z);
   root.rotation.z = (ent.angleDeg * Math.PI) / 180 - Math.PI / 2;

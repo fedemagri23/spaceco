@@ -72,6 +72,7 @@ export function updateFollowHud() {
   const activePhase = getActiveBottomPhase(e.separatedPhases, e.maxPhase);
   const throttle01 = activePhase != null ? e.throttleByPhase[activePhase] ?? 0 : null;
   const throttlePct = throttle01 != null ? throttle01 * 100 : null;
+  const pendingSpin = activePhase != null ? e.pendingEngineSpinDegByPhase?.[activePhase] ?? 0 : 0;
 
   let thrustHudExtra = '';
   if (activePhase != null && throttle01 != null && throttle01 > 0) {
@@ -102,6 +103,8 @@ export function updateFollowHud() {
     <div class="fh-row"><span class="fh-k">Ax · Ay · Az</span><span class="fh-v">${fmtSigned(a.x, 2)} · ${fmtSigned(a.y, 2)} · ${fmtSigned(a.z, 2)}</span></div>
     <div class="fh-row"><span class="fh-k">T misión (T+)</span><span class="fh-v">${fmt(tMission, 2)} s</span></div>
     <div class="fh-row"><span class="fh-k">Ángulo (desde horiz.)</span><span class="fh-v">${fmt(e.angleDeg, 1)} °</span></div>
+    <div class="fh-row"><span class="fh-k">Vel. angular</span><span class="fh-v">${fmtSigned(e.angularVelocityDegS ?? 0, 2)} °/s</span></div>
+    <div class="fh-row"><span class="fh-k">ENGSPIN pendiente</span><span class="fh-v">${activePhase != null ? `F${activePhase} · ${fmtSigned(pendingSpin, 1)} °` : '—'}</span></div>
     <div class="fh-row"><span class="fh-k">Potencia motores</span><span class="fh-v">${activePhase != null && throttlePct != null ? `F${activePhase} · ${fmt(throttlePct, 0)} %${thrustHudExtra}` : '—'}</span></div>
     <div class="fh-section">Masa</div>
     <div class="fh-row"><span class="fh-k">Actual / inicial</span><span class="fh-v">${refM > 0 ? `${fmt(e.mass, 0)} / ${fmt(refM, 0)} kg` : '—'}</span></div>

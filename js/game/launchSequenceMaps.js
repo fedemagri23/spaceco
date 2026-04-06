@@ -12,10 +12,24 @@
 export function validateSequenceActionLine(action, lineNum) {
   const trimmed = action.trim();
   const m = trimmed.match(/^THROTTLE\s+(\d+)\s+(\d+(?:\.\d+)?)\s*%$/i);
-  if (!m) return null;
-  const pct = parseFloat(m[2]);
-  if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
-    return `Línea ${lineNum}: THROTTLE exige porcentaje entre 0 y 100 (valor: ${m[2]})`;
+  if (m) {
+    const pct = parseFloat(m[2]);
+    if (!Number.isFinite(pct) || pct < 0 || pct > 100) {
+      return `Línea ${lineNum}: THROTTLE exige porcentaje entre 0 y 100 (valor: ${m[2]})`;
+    }
+    return null;
+  }
+
+  const e = trimmed.match(/^ENGSPIN\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+  if (e) {
+    const phase = parseInt(e[1], 10);
+    const deg = parseFloat(e[2]);
+    if (!Number.isFinite(phase) || phase < 1) {
+      return `Línea ${lineNum}: ENGSPIN exige fase >= 1`;
+    }
+    if (!Number.isFinite(deg)) {
+      return `Línea ${lineNum}: ENGSPIN exige grados válidos (ej.: ENGSPIN 1 40d)`;
+    }
   }
   return null;
 }

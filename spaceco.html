@@ -96,7 +96,7 @@
         <button type="button" class="btn btn-cam-free" id="btn-cam-free" onclick="setCameraFollowMode(false)" style="display:none">Cámara libre</button>
       </div>
       <div class="lbl" style="margin-top:20px;">Secuencia de lanzamiento (pseudocódigo)</div>
-      <p class="ct-hint">Una línea por evento. <code>THROTTLE fase porcentaje%</code> con porcentaje entre 0 y 100. Ej.: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
+      <p class="ct-hint">Una línea por evento. <code>THROTTLE fase porcentaje%</code> con porcentaje entre 0 y 100. Para giro realista por motor: <code>ENGSPIN fase gradosd</code> (ej.: <code>ENGSPIN 1 40d</code>). Ej.: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
       <textarea id="launch-sequence-editor" class="launch-sequence-editor" rows="14" spellcheck="false" wrap="off" aria-label="Secuencia de lanzamiento"></textarea>
       <div class="ct-editor-toolbar">
         <button type="button" class="btn btn-save-seq" onclick="saveLaunchSequence()">Guardar secuencia</button>
