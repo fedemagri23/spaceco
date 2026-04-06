@@ -38,16 +38,25 @@ function padRocketSpecList() {
 export function updateFollowHud() {
   const root = document.getElementById('follow-camera-hud');
   const grid = document.getElementById('follow-hud-metrics');
+  const centerLine = document.getElementById('follow-camera-centerline');
   if (!root || !grid) return;
 
   if (!isCameraFollowMode()) {
     root.classList.remove('on');
     root.setAttribute('aria-hidden', 'true');
+    if (centerLine) {
+      centerLine.classList.remove('on');
+      centerLine.setAttribute('aria-hidden', 'true');
+    }
     return;
   }
 
   root.classList.add('on');
   root.setAttribute('aria-hidden', 'false');
+  if (centerLine) {
+    centerLine.classList.add('on');
+    centerLine.setAttribute('aria-hidden', 'false');
+  }
 
   const e = gameState.rocketEntity;
   const altM = e.position.y - PAD_SURFACE_Y;

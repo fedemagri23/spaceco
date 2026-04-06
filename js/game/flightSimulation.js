@@ -264,6 +264,7 @@ export function updateFlightSimulation(nowMs) {
   integrateEuler(ent.position, ent.velocity, acc, dt);
 
   root.position.set(ent.position.x, ent.position.y, ent.position.z);
+  root.rotation.z = (ent.angleDeg * Math.PI) / 180 - Math.PI / 2;
 
   updateDebris(dt);
   updateFlamesVisual(ent.missionElapsed);
