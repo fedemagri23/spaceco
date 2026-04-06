@@ -10,7 +10,7 @@ Copia un bloque existente (`launch-panel`, `warehouse-panel`, …) y cambia **id
 <div class="panel" id="mi-panel">
   <div class="panel-hdr">
     <span class="panel-title">/// Título</span>
-    <button type="button" class="x-btn" onclick="closeAll()">X</button>
+    <button type="button" class="x-btn" data-action="close-all">X</button>
   </div>
   <div class="panel-body">
     <!-- contenido -->
@@ -18,7 +18,7 @@ Copia un bloque existente (`launch-panel`, `warehouse-panel`, …) y cambia **id
 </div>
 ```
 
-- **`closeAll()`** ya está en `window` gracias a `attachGlobalHandlers()`.
+- El cierre global usa `data-action="close-all"` y bindings en `initPanelBindings()`.
 
 ## 2. Abrir el panel desde código
 
@@ -42,17 +42,9 @@ Crea **`js/ui/miPanel.js`**:
 - Exporta **`drawMiPanel()`** para poblar el DOM.
 - Si necesitas cerrar al terminar una acción, importa **`closeAllPanels`** desde **`closePanels.js`** (no desde `panels.js` si eso crea un ciclo).
 
-## 5. Handlers globales
+## 5. Acciones UI (sin globals)
 
-Si el HTML usa `onclick="miFunc()"`, en **`attachGlobalHandlers()`** de `panels.js`:
-
-```js
-import { miFunc } from './miPanel.js';
-// ...
-window.miFunc = miFunc;
-```
-
-Alternativa más limpia: en `drawMiPanel()` usa `button.addEventListener` y evita `window.*`.
+Si necesitas un botón global del shell, usa `data-action="mi-accion"` en HTML y registra el handler en `initPanelBindings()` de `panels.js`.
 
 ## 6. Estilos
 

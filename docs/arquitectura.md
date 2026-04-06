@@ -3,51 +3,48 @@
 ## Vista rápida
 
 ```
-html-6/
-├── spaceco.html          # Shell: markup de HUD/paneles + <script type="module" src="js/main.js">
-├── css/main.css          # Estilos globales
+spaceco/
+├── spaceco.html
+├── css/main.css
 ├── js/
-│   ├── main.js           # Bootstrap: init en orden, game loop
-│   ├── types.js          # JSDoc (sin runtime)
-│   ├── config/parts.js   # Definición de piezas y precios
-│   ├── game/state.js     # Estado mutable (dinero, inventario, cohetes)
-│   ├── scene/            # Three.js mundo 3D
-│   ├── ui/               # Paneles DOM, HUD, renderer 3D en canvas 2D
-│   └── input/            # Cámara orbital + raycast
-└── docs/                 # Estas guías
+│   ├── main.js
+│   ├── config/      # catálogos + tuning
+│   ├── game/        # estado y simulación
+│   │   └── sim/     # submódulos de pipeline de vuelo
+│   ├── scene/       # mundo 3D
+│   ├── ui/          # paneles y HUD
+│   └── input/       # cámara y raycast
+├── tests/           # smoke tests node --test
+└── docs/
 ```
 
-## Orden de arranque (`main.js`)
+## Bootstrap (`js/main.js`)
 
-1. **`scene/setup.js`** — `initScene`: crea `scene`, `camera`, `renderer`, luces, niebla; monta el canvas en `#app`.
-2. **`bindResize`** — escucha `resize` de ventana.
-3. **`ui/ui3d.js`** — prepara el mini-renderer para iconos 3D en la UI.
-4. **`scene/environment.js`** — océano, terreno, grid, árboles, tanques (no interactivos).
-5. **`scene/buildings.js`** — edificios; los que abren UI usan `registerClickable` de `scene/interaction.js`.
-6. **`ui/panels.js`** — `attachGlobalHandlers()` asigna `window.closeAll`, `deployRocket`, `buyPart`, `saveRocket` para los `onclick` del HTML.
-7. **`ui/hud.js`** — sincroniza dinero en pantalla.
-8. **`input/camera.js`** — arrastra para orbitar/pan, rueda para zoom; en movimiento llama a `doHover`; en clic suave llama a `doClick`.
-9. **Game loop** — `renderUICanvases()` + `renderer.render(scene, camera)`.
+1. `initScene` + `bindResize`
+2. `initUI3D`
+3. `createEnvironment` + `createBuildings`
+4. `initPanelBindings` (acciones `data-action` del HTML)
+5. `refreshMoneyHud`
+6. `initCameraControls`
+7. loop:
+   - `updateFlightSimulation`
+   - `updateFollowCameraFromRocket`
+   - `updateFollowAtmosphereFromRocket`
+   - `updateFollowHud`
+   - `renderUICanvases`
+   - `renderer.render(scene, camera)`
 
-## Estado del juego
+## Dominios principales
 
-Todo lo que deba persistir en memoria durante la partida vive en **`js/game/state.js`** (`gameState`: dinero, inventario, lista de cohetes, ensamblaje actual, selección, cohete en plataforma).
+- `js/game/state.js`: estado global mutable de partida.
+- `js/game/flightSimulation.js`: fachada de simulación.
+- `js/game/sim/*.js`: eventos, acciones, debris, actitud, sync visual.
+- `js/scene/rocketMeshFactory.js`: factoría común para mallas de cohete.
+- `js/ui/panels.js`: orquestación de paneles y acciones UI.
 
-Al añadir mecánicas nuevas, preferí actualizar `gameState` y luego refrescar UI con funciones dedicadas (como `drawStoreGrid` o `refreshMoneyHud`).
+## Decisiones clave
 
-## Interacción 3D
-
-- **`scene/interaction.js`** mantiene el array `clickables`. Solo esas mallas participan en raycast.
-- **`input/raycast.js`** usa `userData.type` para decidir qué panel abrir y `userData.label` para el tooltip de hover.
-
-## Dependencias circulares
-
-Los paneles que necesitan cerrar la UI importan **`ui/closePanels.js`** (`closeAllPanels`), no `panels.js`, para evitar ciclos con `raycast` → `panels` → …
-
-## Three.js
-
-Los módulos importan:
-
-`https://unpkg.com/three@0.128.0/build/three.module.js`
-
-Equivale al r128 que usabas por CDN en el monolito; si actualizas versión, hazlo en **todos** los archivos que importan Three.
+- Compatibilidad estricta de DSL de lanzamiento.
+- UI sin `onclick` inline: binding por `data-action`.
+- Three.js vía CDN ES modules (`unpkg`).
+- `gameState` sigue siendo singleton, pero se modularizó la lógica crítica alrededor de él.

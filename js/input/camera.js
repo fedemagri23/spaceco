@@ -6,6 +6,13 @@
 import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
 import { camera, renderer } from '../scene/setup.js';
 import { getPadRocketGroup } from '../scene/rocketPad.js';
+import {
+  FOLLOW_CAMERA_DEFAULT_YAW,
+  FOLLOW_CAMERA_DISTANCE_MIN,
+  FOLLOW_CAMERA_DISTANCE_MAX,
+  FOLLOW_CAMERA_BOOTSTRAP_MIN,
+  FOLLOW_CAMERA_BOOTSTRAP_MAX,
+} from '../config/cameraTuning.js';
 
 /** Estado de la cámara orbital. */
 export const cam = {
@@ -42,7 +49,7 @@ let savedCamForFollow = null;
 /** Distancia horizontal aprox. al cohete en modo seguimiento (rueda la ajusta). */
 let followDistance = 280;
 /** Ángulo en XZ desde el que se mira el objetivo (rad). */
-const followYaw = 0.72;
+const followYaw = FOLLOW_CAMERA_DEFAULT_YAW;
 
 const _followBox = new THREE.Box3();
 
@@ -62,7 +69,7 @@ export function setCameraFollowMode(on) {
       ty: cam.ty,
       tz: cam.tz,
     };
-    followDistance = Math.max(140, Math.min(580, cam.radius * 0.48));
+    followDistance = Math.max(FOLLOW_CAMERA_BOOTSTRAP_MIN, Math.min(FOLLOW_CAMERA_BOOTSTRAP_MAX, cam.radius * 0.48));
     cameraFollowMode = true;
     return true;
   }
@@ -176,7 +183,7 @@ export function initCameraControls(onHoverMove, onClick) {
   cv.addEventListener('contextmenu', (e) => e.preventDefault());
   cv.addEventListener('wheel', (e) => {
     if (cameraFollowMode) {
-      followDistance = Math.max(90, Math.min(920, followDistance + e.deltaY * 0.65));
+      followDistance = Math.max(FOLLOW_CAMERA_DISTANCE_MIN, Math.min(FOLLOW_CAMERA_DISTANCE_MAX, followDistance + e.deltaY * 0.65));
       return;
     }
     cam.radius = Math.max(60, Math.min(1400, cam.radius + e.deltaY * 0.55));

@@ -17,14 +17,14 @@
   <div id="follow-camera-hud" class="follow-camera-hud" aria-hidden="true">
     <div class="follow-hud-hdr">
       <span class="follow-hud-title">/// Seguimiento · telemetría</span>
-      <button type="button" class="follow-hud-exit" id="follow-hud-exit" onclick="setCameraFollowMode(false)">Cámara libre</button>
+      <button type="button" class="follow-hud-exit" id="follow-hud-exit" data-action="camera-follow-off">Cámara libre</button>
     </div>
     <div class="follow-hud-metrics" id="follow-hud-metrics"></div>
   </div>
   <div id="follow-camera-centerline" class="follow-camera-centerline" aria-hidden="true"></div>
   <div id="tooltip"></div>
 
-  <div id="overlay" onclick="closeAll()"></div>
+  <div id="overlay" data-action="close-all"></div>
 
   <div id="launch-countdown-overlay" class="launch-countdown-overlay" aria-hidden="true">
     <div class="launch-countdown-num">3</div>
@@ -33,12 +33,12 @@
   <div class="panel" id="launch-panel">
     <div class="panel-hdr">
       <span class="panel-title">/// Plataforma de Lanzamiento</span>
-      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+      <button type="button" class="x-btn" data-action="close-all">X</button>
     </div>
     <div class="panel-body">
       <div class="lbl">Seleccionar cohete</div>
       <div class="rocket-list" id="rocket-list"></div>
-      <button type="button" class="btn" id="deploy-btn" onclick="deployRocket()">Desplegar en plataforma</button>
+      <button type="button" class="btn" id="deploy-btn" data-action="deploy-rocket">Desplegar en plataforma</button>
       <div id="pad-payload-block" class="pad-payload-block" style="display:none;">
         <div class="lbl" style="margin-top:18px;">Carga útil — bahía</div>
         <div id="pad-payload-hint" class="build-hint" aria-live="polite"></div>
@@ -50,7 +50,7 @@
   <div class="panel" id="warehouse-panel">
     <div class="panel-hdr">
       <span class="panel-title">/// Galpón de Ensamblaje</span>
-      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+      <button type="button" class="x-btn" data-action="close-all">X</button>
     </div>
     <div class="panel-body">
       <div class="wh-grid">
@@ -67,7 +67,7 @@
               <div class="asm-stack" id="asm-stack"></div>
             </div>
           </div>
-          <button type="button" class="btn green" onclick="saveRocket()">Guardar cohete</button>
+          <button type="button" class="btn green" data-action="save-rocket">Guardar cohete</button>
         </div>
       </div>
     </div>
@@ -76,7 +76,7 @@
   <div class="panel" id="storage-panel">
     <div class="panel-hdr">
       <span class="panel-title">/// Almacén de carga útil</span>
-      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+      <button type="button" class="x-btn" data-action="close-all">X</button>
     </div>
     <div class="panel-body">
       <div class="lbl">Inventario (satélites y carga para bahía)</div>
@@ -87,19 +87,19 @@
   <div class="panel panel-wide" id="control-tower-panel">
     <div class="panel-hdr">
       <span class="panel-title">/// Torre de control</span>
-      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+      <button type="button" class="x-btn" data-action="close-all">X</button>
     </div>
     <div class="panel-body">
       <div class="control-tower-actions">
-        <button type="button" class="btn btn-launch" id="launch-go-btn" onclick="onLaunchButtonClick()">Lanzamiento</button>
-        <button type="button" class="btn btn-cam-follow" id="btn-cam-follow" onclick="setCameraFollowMode(true)">Cámara seguimiento</button>
-        <button type="button" class="btn btn-cam-free" id="btn-cam-free" onclick="setCameraFollowMode(false)" style="display:none">Cámara libre</button>
+        <button type="button" class="btn btn-launch" id="launch-go-btn" data-action="launch-go">Lanzamiento</button>
+        <button type="button" class="btn btn-cam-follow" id="btn-cam-follow" data-action="camera-follow-on">Cámara seguimiento</button>
+        <button type="button" class="btn btn-cam-free" id="btn-cam-free" data-action="camera-follow-off" style="display:none">Cámara libre</button>
       </div>
       <div class="lbl" style="margin-top:20px;">Secuencia de lanzamiento (pseudocódigo)</div>
       <p class="ct-hint">Una línea por evento. <code>THROTTLE fase porcentaje%</code> con porcentaje entre 0 y 100. Para giro realista por motor: <code>ENGSPIN fase gradosd</code> (ej.: <code>ENGSPIN 1 40d</code>). Ej.: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
       <textarea id="launch-sequence-editor" class="launch-sequence-editor" rows="14" spellcheck="false" wrap="off" aria-label="Secuencia de lanzamiento"></textarea>
       <div class="ct-editor-toolbar">
-        <button type="button" class="btn btn-save-seq" onclick="saveLaunchSequence()">Guardar secuencia</button>
+        <button type="button" class="btn btn-save-seq" data-action="save-launch-sequence">Guardar secuencia</button>
         <span id="launch-sequence-save-status" class="ct-save-status" aria-live="polite"></span>
       </div>
     </div>
@@ -108,7 +108,7 @@
   <div class="panel" id="store-panel">
     <div class="panel-hdr">
       <span class="panel-title">/// Centro de Distribución</span>
-      <button type="button" class="x-btn" onclick="closeAll()">X</button>
+      <button type="button" class="x-btn" data-action="close-all">X</button>
     </div>
     <div class="panel-body">
       <div class="lbl">Comprar Piezas</div>

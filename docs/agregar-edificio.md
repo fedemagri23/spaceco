@@ -44,7 +44,7 @@ Asegúrate de que exista en **`spaceco.html`** un elemento `<div class="panel" i
 if (id === 'mi-panel') drawMiPanel();
 ```
 
-3. Si usas `onclick` en HTML, expón la función en **`attachGlobalHandlers()`** (`window.miAccion = ...`).
+3. Si agregas acciones en shell HTML, usa `data-action` y registra el handler en `initPanelBindings()` de `js/ui/panels.js`.
 
 Ver también [agregar-panel.md](./agregar-panel.md).
 

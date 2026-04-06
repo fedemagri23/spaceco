@@ -13,7 +13,7 @@ import { initScene, bindResize, scene, camera, renderer } from './scene/setup.js
 import { createEnvironment } from './scene/environment.js';
 import { createBuildings } from './scene/buildings.js';
 import { initUI3D, renderUICanvases } from './ui/ui3d.js';
-import { attachGlobalHandlers } from './ui/panels.js';
+import { initPanelBindings } from './ui/panels.js';
 import { refreshMoneyHud } from './ui/hud.js';
 import { initCameraControls, updateFollowCameraFromRocket } from './input/camera.js';
 import { updateFollowAtmosphereFromRocket } from './scene/followAtmosphere.js';
@@ -34,7 +34,7 @@ function bootstrap() {
   createEnvironment();
   createBuildings();
 
-  attachGlobalHandlers();
+  initPanelBindings();
   refreshMoneyHud();
 
   initCameraControls(

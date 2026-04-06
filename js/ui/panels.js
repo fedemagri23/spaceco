@@ -1,12 +1,11 @@
 /**
  * Orquestación de paneles modales: abrir según id, delegar redraws a módulos específicos.
- * Expone `closeAll` en `window` vía `attachGlobalHandlers` desde `main.js`.
  */
 
 import { closeAllPanels } from './closePanels.js';
 import { drawRocketList, deployRocket } from './launchPanel.js';
 import { drawPartsGrid, drawAsmStack, saveRocket } from './warehousePanel.js';
-import { drawStoreGrid, buyPart } from './storePanel.js';
+import { drawStoreGrid } from './storePanel.js';
 import { drawCargoInventory } from './storagePanel.js';
 import {
   syncControlTowerPanel,
@@ -41,31 +40,46 @@ export function closeAll() {
 }
 
 /**
- * Conecta funciones usadas desde atributos `onclick` en el HTML estático.
+ * Activa/desactiva cámara de seguimiento y sincroniza UI de Torre de Control.
+ * @param {boolean} enable
  */
-export function attachGlobalHandlers() {
-  window.closeAll = closeAll;
-  window.deployRocket = deployRocket;
-  window.buyPart = buyPart;
-  window.saveRocket = saveRocket;
-  window.onLaunchButtonClick = onLaunchButtonClick;
-  window.saveLaunchSequence = saveLaunchSequenceFromEditor;
-  window.setCameraFollowMode = (enable) => {
-    const st = document.getElementById('launch-sequence-save-status');
-    if (enable) {
-      if (applyCameraFollowMode(true)) {
-        if (st?.classList.contains('ct-save-err') && st.textContent.includes('seguimiento')) {
-          st.textContent = '';
-          st.classList.remove('ct-save-err');
-        }
-      } else if (st) {
-        st.textContent = 'Despliega un cohete en la plataforma para usar la cámara de seguimiento.';
-        st.classList.add('ct-save-err');
-        st.classList.remove('ct-save-ok');
+export function setCameraFollowMode(enable) {
+  const st = document.getElementById('launch-sequence-save-status');
+  if (enable) {
+    if (applyCameraFollowMode(true)) {
+      if (st?.classList.contains('ct-save-err') && st.textContent.includes('seguimiento')) {
+        st.textContent = '';
+        st.classList.remove('ct-save-err');
       }
-    } else {
-      applyCameraFollowMode(false);
+    } else if (st) {
+      st.textContent = 'Despliega un cohete en la plataforma para usar la cámara de seguimiento.';
+      st.classList.add('ct-save-err');
+      st.classList.remove('ct-save-ok');
     }
-    syncControlTowerCameraButtons();
+  } else {
+    applyCameraFollowMode(false);
+  }
+  syncControlTowerCameraButtons();
+}
+
+/**
+ * Binding explícito de acciones UI declaradas en `data-action`.
+ */
+export function initPanelBindings() {
+  /** @type {Record<string, () => void>} */
+  const actions = {
+    'close-all': () => closeAll(),
+    'deploy-rocket': () => deployRocket(),
+    'save-rocket': () => saveRocket(),
+    'launch-go': () => { void onLaunchButtonClick(); },
+    'save-launch-sequence': () => saveLaunchSequenceFromEditor(),
+    'camera-follow-on': () => setCameraFollowMode(true),
+    'camera-follow-off': () => setCameraFollowMode(false),
   };
+  document.querySelectorAll('[data-action]').forEach((el) => {
+    const action = el.getAttribute('data-action') || '';
+    const fn = actions[action];
+    if (!fn) return;
+    el.addEventListener('click', fn);
+  });
 }

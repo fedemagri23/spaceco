@@ -1,12 +1,24 @@
-# Documentación SpaceCo (desarrollo)
+# Documentación SpaceCo
 
-Guías breves para extender el juego sin perderse en el código.
+## Índice principal
 
-| Guía | Para qué sirve |
-|------|----------------|
-| [arquitectura.md](./arquitectura.md) | Carpetas, orden de arranque, flujo de datos |
-| [agregar-pieza.md](./agregar-pieza.md) | Nuevo componente de cohete (modelo + tienda + inventario) |
-| [agregar-edificio.md](./agregar-edificio.md) | Nuevo edificio clickeable en el mapa 3D |
-| [agregar-panel.md](./agregar-panel.md) | Nuevo panel modal HTML + lógica JS |
+| Documento | Para qué sirve |
+|---|---|
+| [arquitectura.md](./arquitectura.md) | Módulos, dependencias y orden de arranque |
+| [getting-started.md](./getting-started.md) | Setup local y comandos de calidad |
+| [runtime-flow.md](./runtime-flow.md) | Flujo por frame y pipeline de juego |
+| [state-model.md](./state-model.md) | Contrato de `gameState` y estado físico |
+| [simulation.md](./simulation.md) | Física, fases, eventos y actitud |
+| [launch-sequence-dsl.md](./launch-sequence-dsl.md) | Sintaxis del editor de Torre de Control |
+| [ui-panels.md](./ui-panels.md) | Contratos UI y binding por `data-action` |
+| [debug-runbook.md](./debug-runbook.md) | Diagnóstico rápido de problemas comunes |
+| [file-map.md](./file-map.md) | Mapa detallado archivo por archivo |
+| [agregar-pieza.md](./agregar-pieza.md) | Cómo extender catálogo de piezas |
+| [agregar-edificio.md](./agregar-edificio.md) | Cómo añadir edificios interactivos |
+| [agregar-panel.md](./agregar-panel.md) | Cómo crear paneles modales nuevos |
 
-**Importante:** el juego usa `import` de ES modules y Three.js vía CDN. Abre `spaceco.html` con un servidor HTTP local (por ejemplo `npx serve` o la extensión Live Server), no con `file://`, para evitar bloqueos CORS de los módulos.
+## Convención de trabajo
+
+- Mantener compatibilidad de comandos de secuencia (`THROTTLE`, `SEPARATE`, `SPIN`, `ENGSPIN`).
+- Evitar `onclick` inline y APIs globales en `window`.
+- Encapsular lógica nueva en módulos por dominio (`game/sim`, `ui`, `scene`, `config`).
