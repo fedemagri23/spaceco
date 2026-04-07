@@ -1,88 +1,125 @@
 /**
- * Cohete-entidad único: el que está en plataforma o en vuelo.
+ * RocketEntity represents the active rocket in the simulation.
+ * It encapsulates physical state, mass, fuel, and engine properties.
  */
 
 import { PAD_X, PAD_Z, PAD_SURFACE_Y } from '../scene/rocketPad.js';
-import { GRAVITY_SURFACE_MS2 } from './physics.js';
+import { GRAVITY_SURFACE_MS2 } from './physics/PhysicsDefinitions.js';
 
-/**
- * @typedef {Object} Vec3
- * @property {number} x
- * @property {number} y
- * @property {number} z
- *
- * @typedef {Object} RocketEntityState
- * @property {Vec3} position
- * @property {Vec3} velocity
- * @property {Vec3} acceleration
- * @property {number} mass
- * @property {number} gravity
- * @property {number} angleDeg - desde la horizontal (90 = hacia +Y)
- * @property {number} angleZDeg - giro en eje Z (yaw/guiñada)
- * @property {number} angularVelocityYDegS - velocidad angular en eje Y (deg/s)
- * @property {number} angularVelocityZDegS - velocidad angular en eje Z (deg/s)
- * @property {Record<number, number>} pendingEngineSpinYDegByPhase - fase → grados pendientes por ejecutar en eje Y (ENGSPINY)
- * @property {Record<number, number>} pendingEngineSpinZDegByPhase - fase → grados pendientes por ejecutar en eje Z (ENGSPINZ)
- * @property {Record<number, number>} throttleByPhase - fase → 0..1
- * @property {Set<number>} separatedPhases - fases ya separadas (1-based)
- * @property {number} missionElapsed - s desde fin de cuenta atrás (T+0)
- * @property {number} dragRefAreaM2 - área ref. arrastre (m²)
- * @property {number} dragCoeff
- * @property {number} maxPhase - fases del montaje actual
- * @property {{ tankIndex: number, segmentIndex: number, partId: string, phase: number, maxFuelKg: number, currentFuelKg: number, dryMassKg: number }[]} fuelTanks
- * @property {number} referenceMassKg - masa total del cohete completo en plataforma (referencia para %)
- */
+export class RocketEntity {
+  constructor() {
+    this.reset();
+  }
 
-/**
- * @returns {RocketEntityState}
- */
-export function createRocketEntityState() {
-  return {
-    position: { x: PAD_X, y: PAD_SURFACE_Y, z: PAD_Z },
-    velocity: { x: 0, y: 0, z: 0 },
-    acceleration: { x: 0, y: 0, z: 0 },
-    mass: 50000,
-    gravity: GRAVITY_SURFACE_MS2,
-    angleDeg: 90,
-    angleZDeg: 0,
-    angularVelocityYDegS: 0,
-    angularVelocityZDegS: 0,
-    pendingEngineSpinYDegByPhase: {}, // Y
-    pendingEngineSpinZDegByPhase: {}, // Z
-    throttleByPhase: {},
-    separatedPhases: new Set(),
-    missionElapsed: 0,
-    dragRefAreaM2: 14,
-    dragCoeff: 0.45,
-    maxPhase: 0,
-    fuelTanks: [],
-    referenceMassKg: 0,
-  };
-}
+  /**
+   * Resets rocket state to pad defaults.
+   */
+  reset() {
+    this.position = { x: PAD_X, y: PAD_SURFACE_Y, z: PAD_Z };
+    this.velocity = { x: 0, y: 0, z: 0 };
+    this.acceleration = { x: 0, y: 0, z: 0 };
+    
+    this.mass = 50000;
+    this.gravity = GRAVITY_SURFACE_MS2;
+    this.angleDeg = 90; // vertical (pitch)
+    this.angleZDeg = 0; // horizontal (yaw)
+    
+    this.angularVelocityYDegS = 0;
+    this.angularVelocityZDegS = 0;
 
-/**
- * @returns {RocketEntityState}
- */
-export function resetRocketEntityToPad() {
-  return {
-    position: { x: PAD_X, y: PAD_SURFACE_Y, z: PAD_Z },
-    velocity: { x: 0, y: 0, z: 0 },
-    acceleration: { x: 0, y: 0, z: 0 },
-    mass: 50000,
-    gravity: GRAVITY_SURFACE_MS2,
-    angleDeg: 90,
-    angleZDeg: 0,
-    angularVelocityYDegS: 0,
-    angularVelocityZDegS: 0,
-    pendingEngineSpinYDegByPhase: {}, // Y
-    pendingEngineSpinZDegByPhase: {}, // Z
-    throttleByPhase: {},
-    separatedPhases: new Set(),
-    missionElapsed: 0,
-    dragRefAreaM2: 14,
-    dragCoeff: 0.45,
-    maxPhase: 0,
-    fuelTanks: [],
-    referenceMassKg: 0,
-  };
+    this.throttleByPhase = {}; // phase -> 0..1
+    this.separatedPhases = new Set();
+    this.missionElapsed = 0;
+    
+    this.dragRefAreaM2 = 14;
+    this.dragCoeff = 0.45;
+    this.maxPhase = 0;
+    this.fuelTanks = [];
+    this.referenceMassKg = 0;
+
+    // Control parameters for engine gimbaling (SPIN/ENGINE SPIN)
+    this.pendingEngineSpinYDegByPhase = {};
+    this.pendingEngineSpinZDegByPhase = {};
+    
+    // Mission specific state
+    this.payloadId = null;
+    this.isSatelliteReleased = false;
+  }
+
+  /**
+   * Sets the throttle for a specific phase.
+   * @param {number} phase - 1-indexed phase number
+   * @param {number} throttle01 - 0 to 1
+   */
+  setThrottle(phase, throttle01) {
+    if (this.separatedPhases.has(phase)) return;
+    this.throttleByPhase[phase] = Math.max(0, Math.min(1, throttle01));
+  }
+
+  getThrottle(phase) {
+    return this.throttleByPhase[phase] ?? 0;
+  }
+
+  /**
+   * Signals a phase separation. Use the actual separation logic provided by the sim or scene.
+   * @param {number} phase - 1-indexed phase number
+   */
+  separate(phase) {
+    if (this.separatedPhases.has(phase)) return;
+    this.separatedPhases.add(phase);
+    // Note: External logic usually handles mass recomputation and model updates.
+  }
+
+  /**
+   * Adds a spin command for a phase.
+   */
+  addSpin(phase, degrees, axis = 'Y') {
+    if (this.separatedPhases.has(phase)) return;
+    const key = axis === 'Y' ? 'pendingEngineSpinYDegByPhase' : 'pendingEngineSpinZDegByPhase';
+    this[key][phase] = (this[key][phase] ?? 0) + degrees;
+  }
+
+  /**
+   * Returns current altitude AGL (Above Ground Level).
+   */
+  getAltitude() {
+    return this.position.y - PAD_SURFACE_Y;
+  }
+
+  /**
+   * Updates internal physics integration state.
+   */
+  updatePosition(pos, vel, acc) {
+    this.position = { ...pos };
+    this.velocity = { ...vel };
+    this.acceleration = { ...acc };
+  }
+
+  /**
+   * Sets common parameters from a build spec.
+   */
+  initializeFromSpec(spec, initialMass) {
+    this.reset();
+    this.mass = initialMass;
+    this.referenceMassKg = initialMass;
+    // Further initialization via simulation setup...
+  }
+
+  /**
+   * Checks if payload is in orbit conditions.
+   * Typically: Altitude > 180km, Velocity > 7500 m/s (horizontal)
+   */
+  checkOrbitalStatus() {
+    const alt = this.getAltitude();
+    const vx = this.velocity.x;
+    const vz = this.velocity.z;
+    const horizSpeed = Math.sqrt(vx * vx + vz * vz);
+    
+    // Orbital mechanics: very rough simplification for the game.
+    // Near circular orbit at 200km is ~7.8 km/s.
+    const isSuitableAlt = alt > 180_000;
+    const isSuitableSpeed = horizSpeed > 7500;
+    
+    return isSuitableAlt && isSuitableSpeed;
+  }
 }

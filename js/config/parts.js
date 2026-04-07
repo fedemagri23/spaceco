@@ -22,7 +22,7 @@ export const PARTS = {
     props: {
       aceleración: '3.8 g',
       confianza: '98.5%',
-      consumo: '1.2 L/s',
+      consumo: '52 kg/s',
       empuje: '845 kN',
       peso: '411 kg',
     },
@@ -46,7 +46,7 @@ export const PARTS = {
     props: {
       aceleración: '3.0 g',
       confianza: '98.7%',
-      consumo: '1.0 L/s',
+      consumo: '48 kg/s',
       empuje: '840 kN',
       peso: '320 kg',
     },
@@ -65,7 +65,7 @@ export const PARTS = {
     props: {
       aceleración: '4.5 g',
       confianza: '99.9%',
-      consumo: '0.7 L/s',
+      consumo: '35 kg/s',
       empuje: '1860 kN',
       peso: '3177 kg',
     },
@@ -100,7 +100,7 @@ export const PARTS = {
     },
     props: {
       volumen: '834 L',
-      capacidad: '970 kg (RP-1)',
+      capacidad: '970 kg',
       confianza: '99.1%',
       presión: '28 bar',
       peso: '1450 kg',
@@ -120,7 +120,7 @@ export const PARTS = {
     },
     props: {
       volumen: '1018 L',
-      capacidad: '1184 kg (RP-1)',
+      capacidad: '1184 kg',
       confianza: '98.9%',
       presión: '28 bar',
       peso: '1664 kg',

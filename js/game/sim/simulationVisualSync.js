@@ -12,11 +12,11 @@ import { updatePhaseFlames } from '../../scene/rocketFlames.js';
  */
 export function syncRocketTransform(root, entity) {
   root.position.set(entity.position.x, entity.position.y, entity.position.z);
-  // Usar Euler con orden ZYX para que las rotaciones se apliquen en el orden correcto
-  root.rotation.order = 'ZYX';
-  root.rotation.z = (entity.angleDeg * Math.PI) / 180 - Math.PI / 2;  // Pitch
-  root.rotation.y = (entity.angleZDeg * Math.PI) / 180;              // Yaw
-  root.rotation.x = 0; // Roll no usado por ahora
+  // Usar orden XYZ (X primero, luego Z lateral).
+  root.rotation.order = 'XYZ';
+  root.rotation.x = ((90 - entity.angleDeg) * Math.PI) / 180; // Pitch: Mueve la nariz hacia el eje Z
+  root.rotation.y = 0; // Roll no usado
+  root.rotation.z = -(entity.angleZDeg * Math.PI) / 180;      // Yaw: Mueve la nariz hacia el eje X
 }
 
 /**

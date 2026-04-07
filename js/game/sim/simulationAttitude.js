@@ -92,9 +92,8 @@ export function updateAttitudeStep({
   // Calcular rotación en eje Y
   const freeDeltaY = entity.angularVelocityYDegS * dt;
   if (hasPendingY) {
-    const minRotation = Math.sign(pendingSpinYDeg) * 0.01; // Mínimo 0.01° por frame si hay pendiente
+    const minRotation = Math.sign(pendingSpinYDeg) * 15.0 * dt; // Baseline 15 deg/s
     appliedY = Math.sign(pendingSpinYDeg) * Math.min(Math.abs(freeDeltaY), Math.abs(pendingSpinYDeg));
-    // Si appliedY es muy pequeño pero hay pendiente, aplicar al menos el mínimo
     if (Math.abs(appliedY) < Math.abs(minRotation)) {
       appliedY = minRotation;
     }
@@ -105,9 +104,8 @@ export function updateAttitudeStep({
   // Calcular rotación en eje Z
   const freeDeltaZ = entity.angularVelocityZDegS * dt;
   if (hasPendingZ) {
-    const minRotation = Math.sign(pendingSpinZDeg) * 0.01; // Mínimo 0.01° por frame si hay pendiente
+    const minRotation = Math.sign(pendingSpinZDeg) * 15.0 * dt; // Baseline 15 deg/s
     appliedZ = Math.sign(pendingSpinZDeg) * Math.min(Math.abs(freeDeltaZ), Math.abs(pendingSpinZDeg));
-    // Si appliedZ es muy pequeño pero hay pendiente, aplicar al menos el mínimo
     if (Math.abs(appliedZ) < Math.abs(minRotation)) {
       appliedZ = minRotation;
     }

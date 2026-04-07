@@ -27,6 +27,24 @@ export function pushSeparatedDebris(group, sourceVelocity) {
 }
 
 /**
+ * @param {THREE.Group} group
+ * @param {{ x: number, y: number, z: number }} sourceVelocity
+ */
+export function pushReleasedPayload(group, sourceVelocity) {
+  // Impulso inicial ascendente para salir de la bahía.
+  const pushVy = sourceVelocity.y + 4.5; 
+  debrisList.push({
+    group,
+    isPayload: true,
+    velocity: {
+      x: sourceVelocity.x,
+      y: pushVy,
+      z: sourceVelocity.z,
+    },
+  });
+}
+
+/**
  * @param {number} dt
  * @param {number} gravity
  */
@@ -36,7 +54,10 @@ export function updateDebris(dt, gravity) {
     d.group.position.x += d.velocity.x * dt;
     d.group.position.y += d.velocity.y * dt;
     d.group.position.z += d.velocity.z * dt;
-    d.group.rotation.x += dt * 0.7;
-    d.group.rotation.z += dt * 0.4;
+    
+    // Satélites rotan más lento y majestuoso; etapas rotan caóticamente.
+    const rotSpeed = d.isPayload ? 0.1 : 0.7;
+    d.group.rotation.x += dt * rotSpeed;
+    d.group.rotation.z += dt * (rotSpeed * 0.6);
   });
 }

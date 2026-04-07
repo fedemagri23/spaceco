@@ -8,7 +8,7 @@
 import { PARTS } from '../config/parts.js';
 import { PAYLOAD_ITEMS } from '../config/payloadItems.js';
 import { DEFAULT_LAUNCH_SEQUENCE_SCRIPT } from '../config/launchSequence.js';
-import { createRocketEntityState } from './rocketEntity.js';
+import { RocketEntity } from './RocketEntity.js';
 import { applyLaunchSequenceMapsToState } from './launchSequenceMaps.js';
 
 /** Inventario inicial: claves deben coincidir con PARTS. */
@@ -61,8 +61,8 @@ export const gameState = {
   launchSequenceTimeMap: new Map(),
   /** Acciones por altitud (metros), en orden de aparición en el texto. */
   launchSequenceAltitudeMap: new Map(),
-  /** Cohete activo (plataforma / vuelo): estado físico. */
-  rocketEntity: createRocketEntityState(),
+  /** Cohete activo (plataforma / vuelo): estado físico (clase RocketEntity). */
+  rocketEntity: new RocketEntity(),
   /** Simulación de vuelo activa (bucle de lanzamiento). */
   flightSimRunning: false,
 };

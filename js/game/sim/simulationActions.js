@@ -1,13 +1,10 @@
-/**
- * Acciones de secuencia de lanzamiento (THROTTLE, SEPARATE, SPIN, ENGSPINY, ENGSPINZ).
- */
-
+import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
 import { scene } from '../../scene/setup.js';
 import { getPadRocketGroup } from '../../scene/rocketPad.js';
 import { ROCKET_MESH_VISUAL_SCALE } from '../../scene/rocketMesh.js';
 import { getActiveBottomPhase } from '../rocketPhases.js';
 import { removeFuelTanksForSeparatedPhase, recomputeEntityMass } from '../fuelTanks.js';
-import { pushSeparatedDebris } from './simulationDebris.js';
+import { pushSeparatedDebris, pushReleasedPayload } from './simulationDebris.js';
 
 /**
  * @param {{
@@ -44,25 +41,36 @@ export function createApplySequenceAction(deps) {
       return;
     }
 
-    // ENGSPINY
-    m = s.match(/^ENGSPINY\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+    // YAW
+    m = s.match(/^YAW\s+([-+]?\d+(?:\.\d+)?)\s*d?$/i);
     if (m) {
-      const phase = Number(m[1]);
-      const angle = Number(m[2]);
-      if (phase < 1 || phase > deps.rocketEntity.maxPhase || deps.rocketEntity.separatedPhases.has(phase)) return;
-      deps.rocketEntity.pendingEngineSpinYDegByPhase[phase] =
-        (deps.rocketEntity.pendingEngineSpinYDegByPhase[phase] ?? 0) + angle;
+      const active = getActiveBottomPhase(deps.rocketEntity.separatedPhases, deps.rocketEntity.maxPhase);
+      const angle = Number(m[1]);
+      if (active !== null) {
+        deps.rocketEntity.pendingEngineSpinYDegByPhase[active] =
+          (deps.rocketEntity.pendingEngineSpinYDegByPhase[active] ?? 0) + angle;
+      }
       return;
     }
 
-    // ENGSPINZ
-    m = s.match(/^ENGSPINZ\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
-    if (!m) return;
-    const phase = Number(m[1]);
-    const angle = Number(m[2]);
-    if (phase < 1 || phase > deps.rocketEntity.maxPhase || deps.rocketEntity.separatedPhases.has(phase)) return;
-    deps.rocketEntity.pendingEngineSpinZDegByPhase[phase] =
-      (deps.rocketEntity.pendingEngineSpinZDegByPhase[phase] ?? 0) + angle;
+    // PITCH
+    m = s.match(/^PITCH\s+([-+]?\d+(?:\.\d+)?)\s*d?$/i);
+    if (m) {
+      const active = getActiveBottomPhase(deps.rocketEntity.separatedPhases, deps.rocketEntity.maxPhase);
+      const angle = Number(m[1]);
+      if (active !== null) {
+        deps.rocketEntity.pendingEngineSpinZDegByPhase[active] =
+          (deps.rocketEntity.pendingEngineSpinZDegByPhase[active] ?? 0) + angle;
+      }
+      return;
+    }
+
+    // RELEASE
+    m = s.match(/^RELEASE$/i);
+    if (m) {
+      releasePayload(deps.rocketEntity);
+      return;
+    }
   };
 }
 
@@ -71,7 +79,7 @@ export function createApplySequenceAction(deps) {
  * @param {any} entity
  * @param {() => ReturnType<import('../rocketPhases.js').buildPhasePlanFromSpec> | null} getPlan
  */
-function separatePhaseNumber(phaseNum, entity, getPlan) {
+export function separatePhaseNumber(phaseNum, entity, getPlan) {
   const root = getPadRocketGroup();
   if (!root || !root.userData.phaseGroups) return;
   if (entity.separatedPhases.has(phaseNum)) return;
@@ -94,4 +102,28 @@ function separatePhaseNumber(phaseNum, entity, getPlan) {
   removeFuelTanksForSeparatedPhase(entity, phaseNum);
   recomputeEntityMass(entity, getPlan());
   entity.position.y += h * ROCKET_MESH_VISUAL_SCALE;
+}
+
+/**
+ * Libera la carga útil (satélite) del cohete.
+ */
+export function releasePayload(entity) {
+  const root = getPadRocketGroup();
+  if (!root || !root.userData.payloadMesh) {
+    console.warn("Payload mesh not found in rocket group.");
+    return;
+  }
+
+  const pm = root.userData.payloadMesh;
+  
+  // THREE.scene.attach maneja automáticamente la transición de coordenadas locales a mundiales
+  // incluyendo escala y rotación.
+  scene.attach(pm);
+  
+  // Prevenir múltiples liberaciones
+  root.userData.payloadMesh = null; 
+
+  // Agregar a la lista de debris con velocidad física heredada
+  pushReleasedPayload(pm, entity.velocity);
+  console.log("Payload released successfully.");
 }

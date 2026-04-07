@@ -58,4 +58,5 @@ export function doClick(x, y) {
   if (type === 'store') openPanel('store-panel');
   if (type === 'storage') openPanel('storage-panel');
   if (type === 'control_tower') openPanel('control-tower-panel');
+  if (type === 'mission-panel') openPanel('mission-panel');
 }

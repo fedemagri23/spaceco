@@ -4,6 +4,7 @@
 
 import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
 import { scene } from './setup.js';
+import { gameState } from '../game/state.js';
 import { buildRocketMeshPhased } from './rocketMeshPhased.js';
 
 export const PAD_X = -265;
@@ -31,7 +32,7 @@ export function placeRocketOnPad(spec) {
     padRocketGroup = null;
   }
   if (!spec || !Array.isArray(spec) || spec.length === 0) return;
-  const { root } = buildRocketMeshPhased(spec);
+  const { root } = buildRocketMeshPhased(spec, gameState.padPayloadId);
   padRocketGroup = root;
   padRocketGroup.position.set(PAD_X, PAD_SURFACE_Y, PAD_Z);
   scene.add(padRocketGroup);

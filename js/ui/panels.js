@@ -14,6 +14,7 @@ import {
   syncControlTowerCameraButtons,
 } from './controlTowerPanel.js';
 import { setCameraFollowMode as applyCameraFollowMode } from '../input/camera.js';
+import { renderMissionList } from './missionCenter.js';
 
 /**
  * Muestra overlay + panel y refresca contenido dinámico si aplica.
@@ -30,6 +31,7 @@ export function openPanel(id) {
   if (id === 'store-panel') drawStoreGrid();
   if (id === 'storage-panel') drawCargoInventory();
   if (id === 'control-tower-panel') syncControlTowerPanel();
+  if (id === 'mission-panel') renderMissionList();
 }
 
 /**
@@ -75,6 +77,7 @@ export function initPanelBindings() {
     'save-launch-sequence': () => saveLaunchSequenceFromEditor(),
     'camera-follow-on': () => setCameraFollowMode(true),
     'camera-follow-off': () => setCameraFollowMode(false),
+    'open-missions': () => openPanel('mission-panel'),
   };
   document.querySelectorAll('[data-action]').forEach((el) => {
     const action = el.getAttribute('data-action') || '';

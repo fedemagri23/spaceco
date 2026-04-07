@@ -6,13 +6,14 @@ import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
 import { PARTS } from '../config/parts.js';
 import { normalizeRocketSpec } from '../game/rocketBuild.js';
 import { ROCKET_MESH_VISUAL_SCALE } from './rocketMesh.js';
-import { appendMotorCluster, createPartMesh } from './rocketMeshFactory.js';
+import { appendMotorCluster, createPartMesh, createPayloadMesh } from './rocketMeshFactory.js';
 
 /**
  * @param {unknown} spec
+ * @param {string | null} payloadId
  * @returns {{ root: THREE.Group, phaseGroups: THREE.Group[] }}
  */
-export function buildRocketMeshPhased(spec) {
+export function buildRocketMeshPhased(spec, payloadId = null) {
   const segments = normalizeRocketSpec(spec);
   const root = new THREE.Group();
   /** @type {THREE.Group[]} */
@@ -79,6 +80,16 @@ export function buildRocketMeshPhased(spec) {
         }
         m.position.y = yOff + bp.h / 2;
         pg.add(m);
+
+        if (bs.id === 'payloadBay' && payloadId) {
+          const payloadMesh = createPayloadMesh(payloadId);
+          if (payloadMesh) {
+            payloadMesh.position.y = yOff + bp.h / 2;
+            pg.add(payloadMesh);
+            root.userData.payloadMesh = payloadMesh;
+          }
+        }
+
         yOff += bp.h;
       }
       segIdx++;

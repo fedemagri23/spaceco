@@ -123,7 +123,7 @@ function tree(x, z, s = 1) {
   const gy = terrainHeightAt(x, z);
   const trunk = new THREE.Mesh(
     new THREE.CylinderGeometry(0.9 * s, 1.3 * s, 5 * s, 5),
-    new THREE.MeshLambertMaterial({ color: 0x6b3a1a, flatShading: true }),
+    new THREE.MeshPhongMaterial({ color: 0x6b3a1a, flatShading: true }),
   );
   trunk.position.set(x, gy + 2.5 * s, z);
   trunk.castShadow = true;
@@ -131,7 +131,7 @@ function tree(x, z, s = 1) {
 
   const crown = new THREE.Mesh(
     new THREE.ConeGeometry(5 * s, 10 * s, 5),
-    new THREE.MeshLambertMaterial({ color: 0x27ae3f, flatShading: true }),
+    new THREE.MeshPhongMaterial({ color: 0x27ae3f, flatShading: true }),
   );
   crown.position.set(x, gy + 11 * s, z);
   crown.rotation.y = Math.random() * Math.PI * 2;
@@ -148,7 +148,7 @@ function storageTank(x, z) {
   const gy = terrainHeightAt(x, z);
   const m = new THREE.Mesh(
     new THREE.CylinderGeometry(6, 6, 14, 8),
-    new THREE.MeshLambertMaterial({ color: 0x99aacc, flatShading: true }),
+    new THREE.MeshPhongMaterial({ color: 0x99aacc, flatShading: true }),
   );
   m.position.set(x, gy + 7, z);
   m.castShadow = true;
@@ -156,7 +156,7 @@ function storageTank(x, z) {
   scene.add(m);
   const dome = new THREE.Mesh(
     new THREE.SphereGeometry(6, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2),
-    new THREE.MeshLambertMaterial({ color: 0x8899bb, flatShading: true }),
+    new THREE.MeshPhongMaterial({ color: 0x8899bb, flatShading: true }),
   );
   dome.position.set(x, gy + 14, z);
   scene.add(dome);
@@ -200,7 +200,7 @@ function makeTerrain() {
   }
   geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
 
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const mat = new THREE.MeshPhongMaterial({ vertexColors: true, flatShading: true });
   const mesh = new THREE.Mesh(geo, mat);
   mesh.receiveShadow = true;
   scene.add(mesh);
@@ -212,7 +212,7 @@ function makeTerrain() {
 export function createEnvironment() {
   const oceanMesh = new THREE.Mesh(
     new THREE.PlaneGeometry(6000, 6000, 6, 6),
-    new THREE.MeshLambertMaterial({ color: 0x0088cc, flatShading: true }),
+    new THREE.MeshPhongMaterial({ color: 0x0088cc, flatShading: true }),
   );
   oceanMesh.rotation.x = -Math.PI / 2;
   oceanMesh.position.y = -12;

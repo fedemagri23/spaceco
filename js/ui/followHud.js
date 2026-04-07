@@ -39,11 +39,13 @@ export function updateFollowHud() {
   const root = document.getElementById('follow-camera-hud');
   const grid = document.getElementById('follow-hud-metrics');
   const centerLine = document.getElementById('follow-camera-centerline');
-  if (!root || !grid) return;
+  const cmdLog = document.getElementById('follow-hud-command-log');
+  if (!root || !grid || !cmdLog) return;
 
   if (!isCameraFollowMode()) {
     root.classList.remove('on');
     root.setAttribute('aria-hidden', 'true');
+    cmdLog.style.display = 'none';
     if (centerLine) {
       centerLine.classList.remove('on');
       centerLine.setAttribute('aria-hidden', 'true');
@@ -53,6 +55,7 @@ export function updateFollowHud() {
 
   root.classList.add('on');
   root.setAttribute('aria-hidden', 'false');
+  cmdLog.style.display = 'flex';
   if (centerLine) {
     centerLine.classList.add('on');
     centerLine.setAttribute('aria-hidden', 'false');
@@ -107,8 +110,8 @@ export function updateFollowHud() {
     <div class="fh-row"><span class="fh-k">Yaw (giro horiz.)</span><span class="fh-v">${fmt(e.angleZDeg, 1)} °</span></div>
     <div class="fh-row"><span class="fh-k">Vel. angular Y</span><span class="fh-v">${fmtSigned(e.angularVelocityYDegS ?? 0, 2)} °/s</span></div>
     <div class="fh-row"><span class="fh-k">Vel. angular Z</span><span class="fh-v">${fmtSigned(e.angularVelocityZDegS ?? 0, 2)} °/s</span></div>
-    <div class="fh-row"><span class="fh-k">ENGSPINY pendiente</span><span class="fh-v">${activePhase != null ? `F${activePhase} · ${fmtSigned(pendingSpinY, 1)} °` : '—'}</span></div>
-    <div class="fh-row"><span class="fh-k">ENGSPINZ pendiente</span><span class="fh-v">${activePhase != null ? `F${activePhase} · ${fmtSigned(pendingSpinZ, 1)} °` : '—'}</span></div>
+    <div class="fh-row"><span class="fh-k">YAW pendiente</span><span class="fh-v">${activePhase != null ? `F${activePhase} · ${fmtSigned(pendingSpinY, 1)} °` : '—'}</span></div>
+    <div class="fh-row"><span class="fh-k">PITCH pendiente</span><span class="fh-v">${activePhase != null ? `F${activePhase} · ${fmtSigned(pendingSpinZ, 1)} °` : '—'}</span></div>
     <div class="fh-row"><span class="fh-k">Potencia motores</span><span class="fh-v">${activePhase != null && throttlePct != null ? `F${activePhase} · ${fmt(throttlePct, 0)} %${thrustHudExtra}` : '—'}</span></div>
     <div class="fh-section">Masa</div>
     <div class="fh-row"><span class="fh-k">Actual / inicial</span><span class="fh-v">${refM > 0 ? `${fmt(e.mass, 0)} / ${fmt(refM, 0)} kg` : '—'}</span></div>

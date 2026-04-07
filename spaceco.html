@@ -12,15 +12,26 @@
   <div id="hud">
     <div class="hud-pill">SpaceCo // Orbital Ops</div>
     <div class="hud-pill hud-money" id="money-el">$ 1.000.000</div>
+    <div class="hud-pill" id="clock-el" style="background: rgba(0,20,40,0.8);">Day 0, 00:00</div>
+    <div class="hud-pill" id="sim-speed-el" style="background: rgba(40,20,0,0.8); display: none;">x1</div>
+  </div>
+
+  <div id="sim-controls" class="sim-controls" style="display:none;">
+    <button type="button" class="speed-btn" data-speed="1">x1</button>
+    <button type="button" class="speed-btn" data-speed="2">x2</button>
+    <button type="button" class="speed-btn" data-speed="4">x4</button>
+    <button type="button" class="speed-btn" data-speed="8">x8</button>
   </div>
 
   <div id="follow-camera-hud" class="follow-camera-hud" aria-hidden="true">
     <div class="follow-hud-hdr">
       <span class="follow-hud-title">/// Seguimiento · telemetría</span>
+      <button type="button" class="abort-btn" id="abort-btn" style="background:#ff4422; color:#fff; border:none; padding:4px 10px; cursor:pointer; font-weight:bold; border-radius:3px; font-size: 0.8em; margin-right: 10px;">ABORTAR MISIÓN</button>
       <button type="button" class="follow-hud-exit" id="follow-hud-exit" data-action="camera-follow-off">Cámara libre</button>
     </div>
     <div class="follow-hud-metrics" id="follow-hud-metrics"></div>
   </div>
+  <div id="follow-hud-command-log" class="follow-hud-command-log"></div>
   <div id="follow-camera-centerline" class="follow-camera-centerline" aria-hidden="true"></div>
   <div id="tooltip"></div>
 
@@ -96,12 +107,29 @@
         <button type="button" class="btn btn-cam-free" id="btn-cam-free" data-action="camera-follow-off" style="display:none">Cámara libre</button>
       </div>
       <div class="lbl" style="margin-top:20px;">Secuencia de lanzamiento (pseudocódigo)</div>
-      <p class="ct-hint">Una línea por evento. <code>THROTTLE fase porcentaje%</code> con porcentaje entre 0 y 100. Para girar motores: <code>ENGSPINY fase gradosd</code> (eje Y) o <code>ENGSPINZ fase gradosd</code> (eje Z). Ej.: <code>AT T+0s: THROTTLE 1 100%</code>, <code>AT ALTITUDE 1000m: SEPARATE 1</code></p>
+      <p class="ct-hint">Una línea por evento (ej. <code>AT T+0s: THROTTLE 1 100%</code>). Comandos de giro (siempre actúan sobre la etapa actual): <code>PITCH grados</code> (Inclinación frontal/Pitch) o <code>YAW grados</code> (Giro lateral/Yaw).</p>
       <textarea id="launch-sequence-editor" class="launch-sequence-editor" rows="14" spellcheck="false" wrap="off" aria-label="Secuencia de lanzamiento"></textarea>
       <div class="ct-editor-toolbar">
         <button type="button" class="btn btn-save-seq" data-action="save-launch-sequence">Guardar secuencia</button>
         <span id="launch-sequence-save-status" class="ct-save-status" aria-live="polite"></span>
       </div>
+    </div>
+  </div>
+
+  <div class="panel" id="mission-panel">
+    <div class="panel-hdr">
+      <span class="panel-title">/// Centro de Misiones</span>
+      <button type="button" class="x-btn" data-action="close-all">X</button>
+    </div>
+    <div class="panel-body">
+      <div id="mission-tabs" class="mission-tabs" style="display:flex; gap:10px; margin-bottom:15px;">
+        <button type="button" class="m-tab active" data-tab="available" style="flex:1; padding:8px; background:rgba(0,40,80,0.5); color:#fff; border:1px solid rgba(127,232,255,.3); cursor:pointer;">Contratos</button>
+        <button type="button" class="m-tab" data-tab="roadmap" style="flex:1; padding:8px; background:rgba(0,20,40,0.3); color:#88d; border:1px solid rgba(127,232,255,.1); cursor:pointer;">Hoja de Ruta</button>
+      </div>
+      <div id="mission-list-container" class="mission-list-container" style="max-height:400px; overflow-y:auto; border:1px solid rgba(127,232,255,.1); background:rgba(0,5,15,0.4); padding:10px;">
+        <div id="mission-list" class="mission-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+      <div id="mission-pagination" class="mission-pagination" style="margin-top:10px; display:flex; justify-content:center; gap:5px;"></div>
     </div>
   </div>
 
@@ -119,7 +147,6 @@
     </div>
   </div>
 
-  <!-- Módulos ES6: abrir con servidor HTTP local (no file://). Ver docs/arquitectura.md -->
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

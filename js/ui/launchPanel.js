@@ -8,7 +8,6 @@ import { PAYLOAD_ITEMS, PAYLOAD_BAY_MAX_KG } from '../config/payloadItems.js';
 import { buildRocketMesh } from '../scene/rocketMesh.js';
 import { buildPayloadMesh } from '../scene/payloadMesh.js';
 import { placeRocketOnPad } from '../scene/rocketPad.js';
-import { resetRocketEntityToPad } from '../game/rocketEntity.js';
 import { initRocketPropellantFromPadSpec } from '../game/fuelTanks.js';
 import { activeUICanvases } from './ui3d.js';
 import { closeAllPanels } from './closePanels.js';
@@ -96,6 +95,11 @@ export function setPadPayload(newId) {
     gameState.cargoInv[newId]--;
     gameState.padPayloadId = newId;
   }
+
+  // Rebuild 3D model to include/exclude the payload mesh
+  const spec = rocketSpecForList(gameState.padRocket);
+  placeRocketOnPad(spec);
+
   drawPadCargoSection();
 }
 
@@ -217,7 +221,7 @@ export function deployRocket() {
   gameState.padRocket = gameState.savedRockets[gameState.selectedRocket];
   const spec = rocketSpecForList(gameState.padRocket);
   placeRocketOnPad(spec);
-  gameState.rocketEntity = resetRocketEntityToPad();
+  gameState.rocketEntity.reset();
   initRocketPropellantFromPadSpec(spec, gameState.rocketEntity);
   closeAllPanels();
 }

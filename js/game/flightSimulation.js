@@ -4,36 +4,29 @@
 
 import { gameState } from './state.js';
 import { buildPhasePlanFromSpec, getActiveBottomPhase } from './rocketPhases.js';
-import {
-  burnFuelForActiveStage,
-  activeStageCanProduceThrust,
-  initRocketPropellantFromPadSpec,
-} from './fuelTanks.js';
-import {
-  airDensityAtAltitude,
-  dragAcceleration,
-  thrustAccelerationFromNewtons,
-  integrateEuler,
-  estimateClusterThrustNewtons,
-  gravityAtAltitudeMS2,
-} from './physics.js';
-import { getPadRocketGroup, PAD_SURFACE_Y, PAD_X, PAD_Z } from '../scene/rocketPad.js';
+import { FlightComputer } from './control/FlightComputer.js';
+import { executeCommand } from './control/CommandRegistry.js';
+import { PAD_SURFACE_Y, PAD_X, PAD_Z, getPadRocketGroup } from '../scene/rocketPad.js';
 import { SIM_MAX_DT_S } from '../config/simTuning.js';
 import { createApplySequenceAction } from './sim/simulationActions.js';
-import {
-  resetEventCursors,
-  processPendingTimeEvents,
-  processPendingAltitudeEvents,
-} from './sim/simulationEvents.js';
+import { resetEventCursors } from './sim/simulationEvents.js';
 import { clearDebris, updateDebris } from './sim/simulationDebris.js';
 import { updateAttitudeStep } from './sim/simulationAttitude.js';
 import { syncRocketTransform, updateFlamesVisual } from './sim/simulationVisualSync.js';
+import { SimulationLoop } from './physics/SimulationLoop.js';
+import { gameClock } from './GameClock.js';
+import { scene } from '../scene/setup.js';
+import { addCommandToLog, clearCommandLog } from '../ui/commandLog.js';
 
 /** @type {ReturnType<typeof buildPhasePlanFromSpec> | null} */
 let cachedPlan = null;
 let lastFrameTime = 0;
-/** @type {(raw: string) => void} */
-let applySequenceActionFn = () => {};
+let applySequenceActionFn = null;
+
+/** @type {SimulationLoop | null} */
+let simLoop = null;
+/** @type {FlightComputer | null} */
+let flightComputer = null;
 
 /**
  * @param {unknown} rocket
@@ -56,27 +49,23 @@ export function startFlightSimulation() {
   if (!spec.length) return;
 
   const ent = gameState.rocketEntity;
-  ent.separatedPhases.clear();
-  ent.throttleByPhase = {};
-  ent.pendingEngineSpinYDegByPhase = {};
-  ent.pendingEngineSpinZDegByPhase = {};
-  ent.angleDeg = 90;
-  ent.angleZDeg = 0;
-  ent.angularVelocityYDegS = 0;
-  ent.angularVelocityZDegS = 0;
-  ent.missionElapsed = 0;
-  ent.velocity = { x: 0, y: 0, z: 0 };
-  ent.acceleration = { x: 0, y: 0, z: 0 };
-  ent.position = { x: PAD_X, y: PAD_SURFACE_Y, z: PAD_Z };
+  ent.reset();
+  clearCommandLog();
 
   cachedPlan = buildPhasePlanFromSpec(spec);
   ent.maxPhase = cachedPlan.phases.length;
+  ent.payloadId = gameState.padPayloadId || null;
+  ent.isSatelliteReleased = false;
+
   applySequenceActionFn = createApplySequenceAction({
     rocketEntity: ent,
     getPlan: () => cachedPlan,
   });
-  /** Tanques y masa coherentes con el montaje (por si el estado no se inicializó al desplegar). */
-  initRocketPropellantFromPadSpec(spec, ent);
+
+  // Import dynamic due to circular dep risk if at top
+  import('./fuelTanks.js').then(({ initRocketPropellantFromPadSpec }) => {
+    initRocketPropellantFromPadSpec(spec, ent);
+  });
 
   resetEventCursors(gameState.launchSequenceTimeMap, gameState.launchSequenceAltitudeMap);
   clearDebris();
@@ -84,8 +73,90 @@ export function startFlightSimulation() {
   const root = getPadRocketGroup();
   if (root) root.position.set(PAD_X, PAD_SURFACE_Y, PAD_Z);
 
+  // Initialize Simulation Loop & Flight Computer
+  simLoop = new SimulationLoop(ent, cachedPlan);
+  flightComputer = new FlightComputer(ent, gameState.launchSequenceTimeMap, gameState.launchSequenceAltitudeMap);
+  
+  // Set up special command handlers
+  flightComputer.setHandlers({
+    onSeparate: (phase) => {
+      // Lazy load to avoid circular deps
+      import('./sim/simulationActions.js').then(({ separatePhaseNumber }) => {
+        separatePhaseNumber(phase, ent, () => cachedPlan);
+      });
+    },
+    onAbort: () => {
+      abortFlightSimulation();
+    },
+    onRelease: () => {
+      import('./sim/simulationActions.js').then(({ releasePayload }) => {
+        releasePayload(ent);
+      });
+    },
+    onCommandExecuted: (line) => {
+      addCommandToLog(line);
+    }
+  });
+
+  // Randomize wind (Realistic range: 0-15 m/s)
+  const windIntensity = Math.random() * 15;
+  const windDir = Math.random() * 360;
+  simLoop.setWind(windIntensity, windDir);
+  gameState.currentWind = { intensity: windIntensity, direction: windDir };
+
   lastFrameTime = performance.now();
   gameState.flightSimRunning = true;
+}
+
+export function stopFlightSimulation() {
+  gameState.flightSimRunning = false;
+  // Reset speed when not flying
+  gameClock.setTimeScale(1);
+  gameState.simSpeed = 1;
+  const se = document.getElementById('sim-speed-el');
+  if (se) se.textContent = 'x1';
+}
+
+export function abortFlightSimulation() {
+  stopFlightSimulation();
+  
+  // Clear pad rocket as it's lost (remove from persistent inventory)
+  if (gameState.padRocket) {
+    const rocketIndex = gameState.savedRockets.findIndex(r => r.name === gameState.padRocket.name);
+    if (rocketIndex !== -1) {
+      gameState.savedRockets.splice(rocketIndex, 1);
+    }
+    // Clear inventory for parts used in this rocket? 
+    // Usually padRocket is built from parts, but in this game's current logic, 
+    // once pushed to pad it's a separate entity. 
+    gameState.padRocket = null;
+  }
+
+  // Clear payload from inventory if it was on board or already released
+  if (gameState.padPayloadId) {
+    if (gameState.cargoInv[gameState.padPayloadId] > 0) {
+      gameState.cargoInv[gameState.padPayloadId]--;
+    }
+    gameState.padPayloadId = null;
+  }
+
+  // Re-sync UI (Launch panel and storage)
+  import('../ui/launchPanel.js').then(({ renderRocketList }) => renderRocketList());
+  import('../ui/storagePanel.js').then(({ renderCargoInventory }) => renderCargoInventory());
+  import('../ui/hud.js').then(({ refreshMoneyHud }) => refreshMoneyHud());
+
+  // Also clear the scene group for the pad rocket if any
+  const root = getPadRocketGroup();
+  if (root) {
+    scene.remove(root);
+  }
+
+  // Switch to free camera automatically
+  import('../input/camera.js').then(({ setCameraFollowMode }) => {
+    setCameraFollowMode(false);
+  });
+
+  console.log('Flight Aborted: Rocket and payload lost from inventory.');
 }
 
 /**
@@ -93,9 +164,12 @@ export function startFlightSimulation() {
  * @param {number} nowMs - performance.now()
  */
 export function updateFlightSimulation(nowMs) {
-  if (!gameState.flightSimRunning) return;
+  if (!gameState.flightSimRunning || !simLoop) return;
 
-  const dt = Math.min(SIM_MAX_DT_S, Math.max(0, (nowMs - lastFrameTime) / 1000));
+  // Use simulation speed multiplier from gameState (default 1)
+  const timeScale = gameState.simSpeed ?? 1;
+  const dtReal = Math.min(SIM_MAX_DT_S, Math.max(0, (nowMs - lastFrameTime) / 1000));
+  const dt = dtReal * timeScale;
   lastFrameTime = nowMs;
   if (dt <= 0) return;
 
@@ -106,94 +180,13 @@ export function updateFlightSimulation(nowMs) {
     return;
   }
 
-  ent.missionElapsed += dt;
+  // Process events via Flight Computer
+  flightComputer.processEvents(ent.missionElapsed, ent.getAltitude());
 
-  processPendingTimeEvents(ent.missionElapsed, applySequenceActionFn);
-  processPendingAltitudeEvents(ent.position.y - PAD_SURFACE_Y, applySequenceActionFn);
+  // Core Simulation Step
+  simLoop.step(dt);
 
-  const altM = ent.position.y - PAD_SURFACE_Y;
-  ent.gravity = gravityAtAltitudeMS2(altM);
-  const rho = airDensityAtAltitude(altM);
-
-  const active = getActiveBottomPhase(ent.separatedPhases, ent.maxPhase);
-  const motorsOperational =
-    active !== null && cachedPlan && activeStageCanProduceThrust(ent, cachedPlan, active);
-
-  if (motorsOperational) {
-    const thBurn = ent.throttleByPhase[active] ?? 0;
-    if (thBurn > 0) burnFuelForActiveStage(ent, cachedPlan, active, thBurn, dt);
-  }
-
-  let thrustN = 0;
-  if (motorsOperational) {
-    const th = ent.throttleByPhase[active] ?? 0;
-    const ph = cachedPlan.phases.find((p) => p.phase === active);
-    if (ph) {
-      const seg = cachedPlan.segments[ph.segmentStart];
-      if (seg && seg.kind === 'motors') {
-        thrustN = estimateClusterThrustNewtons(seg.count, th, seg.engineId);
-      }
-    }
-  }
-
-  const g = ent.gravity; // ya actualizado con g(h) según altitud
-  const acc = {
-    x: 0,
-    y: -g,
-    z: 0,
-  };
-
-  const thrustAcc = thrustAccelerationFromNewtons(thrustN, ent.mass, ent.angleDeg, ent.angleZDeg);
-  acc.x += thrustAcc.x;
-  acc.y += thrustAcc.y;
-  acc.z += thrustAcc.z;
-
-  const dragAcc = dragAcceleration(ent.mass, ent.velocity, rho, ent.dragCoeff, ent.dragRefAreaM2);
-  acc.x += dragAcc.x;
-  acc.y += dragAcc.y;
-  acc.z += dragAcc.z;
-
-  ent.acceleration = { ...acc };
-  integrateEuler(ent.position, ent.velocity, acc, dt);
-
-  const activeSpinPhase = getActiveBottomPhase(ent.separatedPhases, ent.maxPhase);
-  const pendingSpinYDeg = activeSpinPhase !== null
-    ? (ent.pendingEngineSpinYDegByPhase[activeSpinPhase] ?? 0)
-    : 0;
-  const pendingSpinZDeg = activeSpinPhase !== null
-    ? (ent.pendingEngineSpinZDegByPhase[activeSpinPhase] ?? 0)
-    : 0;
-
-  const applied = updateAttitudeStep({
-    entity: ent,
-    pendingSpinYDeg,
-    pendingSpinZDeg,
-    motorsOperational,
-    thrustN,
-    dt,
-    plan: cachedPlan,
-  });
-
-  const hasYSpin = Math.abs(pendingSpinYDeg) > 1e-4;
-  const hasZSpin = Math.abs(pendingSpinZDeg) > 1e-4;
-
-  if (activeSpinPhase !== null && (hasYSpin || hasZSpin)) {
-    ent.angleDeg += applied.y ?? 0;
-    ent.angleZDeg += applied.z ?? 0;
-    ent.pendingEngineSpinYDegByPhase[activeSpinPhase] = pendingSpinYDeg - (applied.y ?? 0);
-    ent.pendingEngineSpinZDegByPhase[activeSpinPhase] = pendingSpinZDeg - (applied.z ?? 0);
-    
-    if (Math.abs(ent.pendingEngineSpinYDegByPhase[activeSpinPhase]) < 1e-3) {
-      ent.pendingEngineSpinYDegByPhase[activeSpinPhase] = 0;
-    }
-    if (Math.abs(ent.pendingEngineSpinZDegByPhase[activeSpinPhase]) < 1e-3) {
-      ent.pendingEngineSpinZDegByPhase[activeSpinPhase] = 0;
-    }
-  } else {
-    ent.angleDeg += applied.y ?? 0;
-    ent.angleZDeg += applied.z ?? 0;
-  }
-
+  // Visual Sync
   syncRocketTransform(root, ent);
   updateDebris(dt, ent.gravity);
   updateFlamesVisual(root, ent, cachedPlan, ent.missionElapsed);

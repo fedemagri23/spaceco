@@ -24,7 +24,7 @@ import { registerClickable } from './interaction.js';
 function box(w, h, d, color, x, y, z, cast = true) {
   const m = new THREE.Mesh(
     new THREE.BoxGeometry(w, h, d),
-    new THREE.MeshLambertMaterial({ color, flatShading: true }),
+    new THREE.MeshPhongMaterial({ color, flatShading: true }),
   );
   m.position.set(x, y + h / 2, z);
   m.castShadow = cast;
@@ -48,7 +48,7 @@ function box(w, h, d, color, x, y, z, cast = true) {
 function cylinder(rTop, rBottom, h, color, x, y, z, cast = true) {
   const m = new THREE.Mesh(
     new THREE.CylinderGeometry(rTop, rBottom, h, 32), // 32 segmentos para que se vea suave
-    new THREE.MeshLambertMaterial({ color, flatShading: true })
+    new THREE.MeshPhongMaterial({ color, flatShading: true })
   );
   // Anclamos la base en Y
   m.position.set(x, y + h / 2, z);
@@ -71,7 +71,7 @@ function cylinder(rTop, rBottom, h, color, x, y, z, cast = true) {
 function sphere(r, color, x, y, z, cast = true) {
   const m = new THREE.Mesh(
     new THREE.SphereGeometry(r, 32, 16),
-    new THREE.MeshLambertMaterial({ color, flatShading: true })
+    new THREE.MeshPhongMaterial({ color, flatShading: true })
   );
   // Anclamos la base de la esfera en Y (y + radio)
   m.position.set(x, y + r, z);
@@ -95,7 +95,7 @@ function sphere(r, color, x, y, z, cast = true) {
 function cone(r, h, color, x, y, z, cast = true) {
   const m = new THREE.Mesh(
     new THREE.ConeGeometry(r, h, 32),
-    new THREE.MeshLambertMaterial({ color, flatShading: true })
+    new THREE.MeshPhongMaterial({ color, flatShading: true })
   );
   // Anclamos la base en Y
   m.position.set(x, y + h / 2, z);
@@ -119,7 +119,7 @@ function cone(r, h, color, x, y, z, cast = true) {
 function dish(r, depth, color, x, y, z, cast = true) {
   const m = new THREE.Mesh(
     new THREE.SphereGeometry(r, 32, 16, 0, Math.PI * 2, 0, depth),
-    new THREE.MeshLambertMaterial({ 
+    new THREE.MeshPhongMaterial({ 
       color, 
       flatShading: true, 
       side: THREE.DoubleSide
@@ -164,7 +164,7 @@ function solidHalfCylinder(r, l, color, x, y, z, cast = true) {
 
   const m = new THREE.Mesh(
     geom,
-    new THREE.MeshLambertMaterial({ color, flatShading: true })
+    new THREE.MeshPhongMaterial({ color, flatShading: true })
   );
 
   m.rotation.y = Math.PI / 2;
@@ -193,7 +193,7 @@ function shellHalfCylinder(r, l, color, x, y, z, cast = true) {
   const geom = new THREE.CylinderGeometry(r, r, l, 32, 1, true, 0, Math.PI);
 
   const m = new THREE.Mesh(
-    geom,  new THREE.MeshLambertMaterial({ color, flatShading: true, side: THREE.DoubleSide })
+    geom,  new THREE.MeshPhongMaterial({ color, flatShading: true, side: THREE.DoubleSide })
   );
 
   m.rotation.z = Math.PI / 2;
@@ -218,7 +218,7 @@ function truck(x, z, rotation = 0) {
   const cabin = box(3, 3, 3, 0xff5533, x - 4.5, 0, z, true);
   cabin.rotation.y = rotation;
 
-  const wheelMat = new THREE.MeshLambertMaterial({ color: 0x222222, flatShading: true });
+  const wheelMat = new THREE.MeshPhongMaterial({ color: 0x222222, flatShading: true });
   const mkWheel = (wx, wz) => {
     const wmesh = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.8, 16), wheelMat);
     wmesh.position.set(wx, 1, wz);
@@ -305,7 +305,7 @@ function buildRoundabout(x, y, z, radius, laneWidth = 10) {
   const grassColor = 0x338833;
 
   const asphaltGeom = new THREE.RingGeometry(radius - laneWidth, radius, 64);
-  const asphaltMat = new THREE.MeshLambertMaterial({ 
+  const asphaltMat = new THREE.MeshPhongMaterial({ 
     color: streetColor, 
     side: THREE.DoubleSide 
   });
@@ -316,7 +316,7 @@ function buildRoundabout(x, y, z, radius, laneWidth = 10) {
 
   const islandRadius = radius - laneWidth;
   const islandGeom = new THREE.CircleGeometry(islandRadius, 64);
-  const islandMat = new THREE.MeshLambertMaterial({ color: grassColor });
+  const islandMat = new THREE.MeshPhongMaterial({ color: grassColor });
   const island = new THREE.Mesh(islandGeom, islandMat);
   
   island.rotation.x = -Math.PI / 2;
@@ -401,5 +401,13 @@ export function createBuildings() {
   box(10, 6, 2, 0x4ba8fa, S_X, 5, S_Z + 24);
   box(10, 6, 2, 0x4ba8fa, S_X + 20, 5, S_Z + 24);
 
+  // Misión / HQ
+  const HQ_X = -150;
+  const HQ_Z = -100;
+  registerClickable(box(40, 20, 40, 0x556688, HQ_X, 0, HQ_Z), 'mission-panel', ':: Centro de Misiones');
+  registerClickable(box(35, 12, 35, 0x7788aa, HQ_X, 20, HQ_Z), 'mission-panel', ':: Centro de Misiones');
+  box(2, 30, 2, 0xffffff, HQ_X - 18, 0, HQ_Z - 18); // Mast-flagpole
+  sphere(3, 0x44aaff, HQ_X, 32, HQ_Z); // Globe-like ornament
+  
   buildStreet(S_X, 0, S_Z + 24, 80, 3/2 * Math.PI);
 }

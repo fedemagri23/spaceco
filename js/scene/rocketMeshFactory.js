@@ -4,6 +4,7 @@
 
 import * as THREE from 'https://unpkg.com/three@0.128.0/build/three.module.js';
 import { PARTS } from '../config/parts.js';
+import { PAYLOAD_ITEMS } from '../config/payloadItems.js';
 
 /**
  * Posiciones XZ de centros de motores en un bloque (misma altura Y).
@@ -31,6 +32,31 @@ export function motorOffsetsXZ(n, r) {
     out.push([Math.cos(a) * R, Math.sin(a) * R]);
   }
   return out;
+}
+
+/**
+ * @param {string} payloadId
+ * @returns {THREE.Mesh | null}
+ */
+export function createPayloadMesh(payloadId) {
+  const p = PAYLOAD_ITEMS[payloadId];
+  if (!p) return null;
+
+  // Simple satellite mesh: octahedron + "solar panels" (flat boxes)
+  const group = new THREE.Group();
+  
+  const bodyGeo = new THREE.OctahedronGeometry(3.0, 0);
+  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x88ccff, flatShading: true });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  group.add(body);
+
+  const panelGeo = new THREE.BoxGeometry(9, 0.2, 3);
+  const panelMat = new THREE.MeshLambertMaterial({ color: 0x2244aa, flatShading: true });
+  const panel = new THREE.Mesh(panelGeo, panelMat);
+  group.add(panel);
+
+  group.castShadow = true;
+  return group;
 }
 
 /**

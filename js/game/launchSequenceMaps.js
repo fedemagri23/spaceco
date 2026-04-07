@@ -20,32 +20,44 @@ export function validateSequenceActionLine(action, lineNum) {
     return null;
   }
 
-  // ENGSPINY
-  let ey = trimmed.match(/^ENGSPINY\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
-  if (ey) {
-    const phase = parseInt(ey[1], 10);
-    const deg = parseFloat(ey[2]);
+  // SEPARATE
+  let sep = trimmed.match(/^SEPARATE\s+(\d+)$/i);
+  if (sep) {
+    const phase = parseInt(sep[1], 10);
     if (!Number.isFinite(phase) || phase < 1) {
-      return `Línea ${lineNum}: ENGSPINY exige fase >= 1`;
-    }
-    if (!Number.isFinite(deg)) {
-      return `Línea ${lineNum}: ENGSPINY exige grados válidos (ej.: ENGSPINY 1 40d)`;
+      return `Línea ${lineNum}: SEPARATE exige número de fase >= 1`;
     }
     return null;
   }
 
-  // ENGSPINZ
-  let ez = trimmed.match(/^ENGSPINZ\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
-  if (ez) {
-    const phase = parseInt(ez[1], 10);
-    const deg = parseFloat(ez[2]);
-    if (!Number.isFinite(phase) || phase < 1) {
-      return `Línea ${lineNum}: ENGSPINZ exige fase >= 1`;
-    }
-    if (!Number.isFinite(deg)) {
-      return `Línea ${lineNum}: ENGSPINZ exige grados válidos (ej.: ENGSPINZ 1 40d)`;
-    }
+  // RELEASE
+  if (trimmed.match(/^RELEASE$/i)) {
     return null;
+  }
+
+  // ABORT
+  if (trimmed.match(/^ABORT$/i)) {
+    return null;
+  }
+
+  // YAW
+  let ey = trimmed.match(/^YAW\s+([-+]?\d+(?:\.\d+)?)\s*d?$/i);
+  if (ey) {
+    const deg = parseFloat(ey[1]);
+    if (!Number.isFinite(deg)) {
+      return `Línea ${lineNum}: YAW exige grados válidos (ej.: YAW 45)`;
+    }
+    return null; // OK
+  }
+
+  // PITCH
+  let ez = trimmed.match(/^PITCH\s+([-+]?\d+(?:\.\d+)?)\s*d?$/i);
+  if (ez) {
+    const deg = parseFloat(ez[1]);
+    if (!Number.isFinite(deg)) {
+      return `Línea ${lineNum}: PITCH exige grados válidos (ej.: PITCH 45)`;
+    }
+    return null; // OK
   }
 
   return null;
