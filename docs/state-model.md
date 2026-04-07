@@ -18,7 +18,7 @@ Definido por `createRocketEntityState()` en `js/game/rocketEntity.js`.
 Campos clave:
 
 - traslación: `position`, `velocity`, `acceleration`
-- orientación: `angleDeg`, `angularVelocityDegS`, `pendingEngineSpinDegByPhase`
+- orientación: `angleDeg`, `angleZDeg`, `angularVelocityYDegS`, `angularVelocityZDegS`, `pendingEngineSpinYDegByPhase`, `pendingEngineSpinZDegByPhase`
 - masa y gravedad: `mass`, `referenceMassKg`, `gravity`
 - propulsión y etapas: `throttleByPhase`, `separatedPhases`, `fuelTanks`, `maxPhase`
 

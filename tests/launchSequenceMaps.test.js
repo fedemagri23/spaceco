@@ -6,12 +6,12 @@ test('parseLaunchSequenceScript parsea acciones por tiempo y altitud', () => {
   const script = [
     'AT T+0s: THROTTLE 1 100%',
     'AT ALTITUDE 1000m: SEPARATE 1',
-    'AT ALTITUDE 1000m: ENGSPIN 2 -20d',
+    'AT ALTITUDE 1000m: ENGSPINY 2 -20d',
   ].join('\n');
   const parsed = parseLaunchSequenceScript(script);
   assert.equal(parsed.errors.length, 0);
   assert.deepEqual(parsed.timeMap.get(0), ['THROTTLE 1 100%']);
-  assert.deepEqual(parsed.altitudeMap.get(1000), ['SEPARATE 1', 'ENGSPIN 2 -20d']);
+  assert.deepEqual(parsed.altitudeMap.get(1000), ['SEPARATE 1', 'ENGSPINY 2 -20d']);
 });
 
 test('validateSequenceActionLine rechaza throttle fuera de rango', () => {
@@ -20,7 +20,12 @@ test('validateSequenceActionLine rechaza throttle fuera de rango', () => {
   assert.match(err, /THROTTLE exige porcentaje/);
 });
 
-test('validateSequenceActionLine valida formato ENGSPIN', () => {
-  assert.equal(validateSequenceActionLine('ENGSPIN 1 40d', 2), null);
-  assert.match(String(validateSequenceActionLine('ENGSPIN 0 40d', 3)), /fase >= 1/);
+test('validateSequenceActionLine valida formato ENGSPINY', () => {
+  assert.equal(validateSequenceActionLine('ENGSPINY 1 40d', 2), null);
+  assert.match(String(validateSequenceActionLine('ENGSPINY 0 40d', 3)), /fase >= 1/);
+});
+
+test('validateSequenceActionLine valida formato ENGSPINZ', () => {
+  assert.equal(validateSequenceActionLine('ENGSPINZ 1 40d', 2), null);
+  assert.match(String(validateSequenceActionLine('ENGSPINZ 0 40d', 3)), /fase >= 1/);
 });

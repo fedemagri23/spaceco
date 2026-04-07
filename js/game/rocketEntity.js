@@ -18,8 +18,11 @@ import { GRAVITY_SURFACE_MS2 } from './physics.js';
  * @property {number} mass
  * @property {number} gravity
  * @property {number} angleDeg - desde la horizontal (90 = hacia +Y)
- * @property {number} angularVelocityDegS - velocidad angular actual (deg/s)
- * @property {Record<number, number>} pendingEngineSpinDegByPhase - fase → grados pendientes por ejecutar (ENGSPIN)
+ * @property {number} angleZDeg - giro en eje Z (yaw/guiñada)
+ * @property {number} angularVelocityYDegS - velocidad angular en eje Y (deg/s)
+ * @property {number} angularVelocityZDegS - velocidad angular en eje Z (deg/s)
+ * @property {Record<number, number>} pendingEngineSpinYDegByPhase - fase → grados pendientes por ejecutar en eje Y (ENGSPINY)
+ * @property {Record<number, number>} pendingEngineSpinZDegByPhase - fase → grados pendientes por ejecutar en eje Z (ENGSPINZ)
  * @property {Record<number, number>} throttleByPhase - fase → 0..1
  * @property {Set<number>} separatedPhases - fases ya separadas (1-based)
  * @property {number} missionElapsed - s desde fin de cuenta atrás (T+0)
@@ -41,8 +44,11 @@ export function createRocketEntityState() {
     mass: 50000,
     gravity: GRAVITY_SURFACE_MS2,
     angleDeg: 90,
-    angularVelocityDegS: 0,
-    pendingEngineSpinDegByPhase: {},
+    angleZDeg: 0,
+    angularVelocityYDegS: 0,
+    angularVelocityZDegS: 0,
+    pendingEngineSpinYDegByPhase: {}, // Y
+    pendingEngineSpinZDegByPhase: {}, // Z
     throttleByPhase: {},
     separatedPhases: new Set(),
     missionElapsed: 0,
@@ -65,8 +71,11 @@ export function resetRocketEntityToPad() {
     mass: 50000,
     gravity: GRAVITY_SURFACE_MS2,
     angleDeg: 90,
-    angularVelocityDegS: 0,
-    pendingEngineSpinDegByPhase: {},
+    angleZDeg: 0,
+    angularVelocityYDegS: 0,
+    angularVelocityZDegS: 0,
+    pendingEngineSpinYDegByPhase: {}, // Y
+    pendingEngineSpinZDegByPhase: {}, // Z
     throttleByPhase: {},
     separatedPhases: new Set(),
     missionElapsed: 0,

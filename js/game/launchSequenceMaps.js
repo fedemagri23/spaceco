@@ -20,17 +20,34 @@ export function validateSequenceActionLine(action, lineNum) {
     return null;
   }
 
-  const e = trimmed.match(/^ENGSPIN\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
-  if (e) {
-    const phase = parseInt(e[1], 10);
-    const deg = parseFloat(e[2]);
+  // ENGSPINY
+  let ey = trimmed.match(/^ENGSPINY\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+  if (ey) {
+    const phase = parseInt(ey[1], 10);
+    const deg = parseFloat(ey[2]);
     if (!Number.isFinite(phase) || phase < 1) {
-      return `Línea ${lineNum}: ENGSPIN exige fase >= 1`;
+      return `Línea ${lineNum}: ENGSPINY exige fase >= 1`;
     }
     if (!Number.isFinite(deg)) {
-      return `Línea ${lineNum}: ENGSPIN exige grados válidos (ej.: ENGSPIN 1 40d)`;
+      return `Línea ${lineNum}: ENGSPINY exige grados válidos (ej.: ENGSPINY 1 40d)`;
     }
+    return null;
   }
+
+  // ENGSPINZ
+  let ez = trimmed.match(/^ENGSPINZ\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+  if (ez) {
+    const phase = parseInt(ez[1], 10);
+    const deg = parseFloat(ez[2]);
+    if (!Number.isFinite(phase) || phase < 1) {
+      return `Línea ${lineNum}: ENGSPINZ exige fase >= 1`;
+    }
+    if (!Number.isFinite(deg)) {
+      return `Línea ${lineNum}: ENGSPINZ exige grados válidos (ej.: ENGSPINZ 1 40d)`;
+    }
+    return null;
+  }
+
   return null;
 }
 

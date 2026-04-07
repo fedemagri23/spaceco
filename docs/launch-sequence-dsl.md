@@ -13,7 +13,10 @@ Líneas vacías y comentarios (`# ...`) se ignoran.
   - porcentaje en `[0, 100]`
 - `SEPARATE <fase>`
 - `SPIN <grados>`
-- `ENGSPIN <fase> <grados>d`
+- `ENGSPINY <fase> <grados>d`
+  - giro en eje Y (pitch)
+- `ENGSPINZ <fase> <grados>d`
+  - giro en eje Z (yaw)
 
 ## Ejemplos
 
@@ -21,7 +24,8 @@ Líneas vacías y comentarios (`# ...`) se ignoran.
 AT T+0s: THROTTLE 1 100%
 AT ALTITUDE 1000m: SEPARATE 1
 AT ALTITUDE 1000m: THROTTLE 2 100%
-AT ALTITUDE 2000m: ENGSPIN 2 -20d
+AT ALTITUDE 2000m: ENGSPINY 2 -20d
+AT ALTITUDE 3000m: ENGSPINZ 2 15d
 ```
 
 ## Validación

@@ -62,17 +62,23 @@ export function dragAcceleration(massKg, velocity, rho, dragCoeff, refAreaM2) {
 }
 
 /**
- * Aceleración por empuje (ángulo desde la horizontal: 0° = plano, 90° = hacia +Y).
+ * Aceleración por empuje en 3D (pitch desde la horizontal: 0° = plano XZ, 90° = hacia +Y; yaw rotación en XZ).
  * @param {number} thrustN
  * @param {number} massKg
- * @param {number} angleDeg
+ * @param {number} pitchDeg - inclinación desde la horizontal (angleDeg)
+ * @param {number} yawDeg - giro horizontal (angleZDeg)
  * @returns {{ x: number, y: number, z: number }}
  */
-export function thrustAccelerationFromNewtons(thrustN, massKg, angleDeg) {
+export function thrustAccelerationFromNewtons(thrustN, massKg, pitchDeg, yawDeg = 0) {
   if (massKg <= 0) return { x: 0, y: 0, z: 0 };
-  const rad = (angleDeg * Math.PI) / 180;
+  const pitchRad = (pitchDeg * Math.PI) / 180;
+  const yawRad = (yawDeg * Math.PI) / 180;
   const a = thrustN / massKg;
-  return { x: a * Math.cos(rad), y: a * Math.sin(rad), z: 0 };
+  return {
+    x: a * Math.sin(yawRad) * Math.cos(pitchRad),
+    y: a * Math.sin(pitchRad),
+    z: a * Math.cos(yawRad) * Math.cos(pitchRad)
+  };
 }
 
 /**

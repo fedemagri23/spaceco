@@ -58,8 +58,12 @@ export function startFlightSimulation() {
   const ent = gameState.rocketEntity;
   ent.separatedPhases.clear();
   ent.throttleByPhase = {};
-  ent.pendingEngineSpinDegByPhase = {};
-  ent.angularVelocityDegS = 0;
+  ent.pendingEngineSpinYDegByPhase = {};
+  ent.pendingEngineSpinZDegByPhase = {};
+  ent.angleDeg = 90;
+  ent.angleZDeg = 0;
+  ent.angularVelocityYDegS = 0;
+  ent.angularVelocityZDegS = 0;
   ent.missionElapsed = 0;
   ent.velocity = { x: 0, y: 0, z: 0 };
   ent.acceleration = { x: 0, y: 0, z: 0 };
@@ -139,7 +143,7 @@ export function updateFlightSimulation(nowMs) {
     z: 0,
   };
 
-  const thrustAcc = thrustAccelerationFromNewtons(thrustN, ent.mass, ent.angleDeg);
+  const thrustAcc = thrustAccelerationFromNewtons(thrustN, ent.mass, ent.angleDeg, ent.angleZDeg);
   acc.x += thrustAcc.x;
   acc.y += thrustAcc.y;
   acc.z += thrustAcc.z;
@@ -153,25 +157,41 @@ export function updateFlightSimulation(nowMs) {
   integrateEuler(ent.position, ent.velocity, acc, dt);
 
   const activeSpinPhase = getActiveBottomPhase(ent.separatedPhases, ent.maxPhase);
-  const pendingSpinDeg = activeSpinPhase !== null
-    ? (ent.pendingEngineSpinDegByPhase[activeSpinPhase] ?? 0)
+  const pendingSpinYDeg = activeSpinPhase !== null
+    ? (ent.pendingEngineSpinYDegByPhase[activeSpinPhase] ?? 0)
     : 0;
+  const pendingSpinZDeg = activeSpinPhase !== null
+    ? (ent.pendingEngineSpinZDegByPhase[activeSpinPhase] ?? 0)
+    : 0;
+
   const applied = updateAttitudeStep({
     entity: ent,
-    pendingSpinDeg,
+    pendingSpinYDeg,
+    pendingSpinZDeg,
     motorsOperational,
     thrustN,
     dt,
     plan: cachedPlan,
   });
-  if (activeSpinPhase !== null && Math.abs(pendingSpinDeg) > 1e-4) {
-    ent.angleDeg += applied;
-    ent.pendingEngineSpinDegByPhase[activeSpinPhase] = pendingSpinDeg - applied;
-    if (Math.abs(ent.pendingEngineSpinDegByPhase[activeSpinPhase]) < 1e-3) {
-      ent.pendingEngineSpinDegByPhase[activeSpinPhase] = 0;
+
+  const hasYSpin = Math.abs(pendingSpinYDeg) > 1e-4;
+  const hasZSpin = Math.abs(pendingSpinZDeg) > 1e-4;
+
+  if (activeSpinPhase !== null && (hasYSpin || hasZSpin)) {
+    ent.angleDeg += applied.y ?? 0;
+    ent.angleZDeg += applied.z ?? 0;
+    ent.pendingEngineSpinYDegByPhase[activeSpinPhase] = pendingSpinYDeg - (applied.y ?? 0);
+    ent.pendingEngineSpinZDegByPhase[activeSpinPhase] = pendingSpinZDeg - (applied.z ?? 0);
+    
+    if (Math.abs(ent.pendingEngineSpinYDegByPhase[activeSpinPhase]) < 1e-3) {
+      ent.pendingEngineSpinYDegByPhase[activeSpinPhase] = 0;
+    }
+    if (Math.abs(ent.pendingEngineSpinZDegByPhase[activeSpinPhase]) < 1e-3) {
+      ent.pendingEngineSpinZDegByPhase[activeSpinPhase] = 0;
     }
   } else {
-    ent.angleDeg += applied;
+    ent.angleDeg += applied.y ?? 0;
+    ent.angleZDeg += applied.z ?? 0;
   }
 
   syncRocketTransform(root, ent);

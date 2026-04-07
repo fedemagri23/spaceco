@@ -1,5 +1,5 @@
 /**
- * Acciones de secuencia de lanzamiento (THROTTLE, SEPARATE, SPIN, ENGSPIN).
+ * Acciones de secuencia de lanzamiento (THROTTLE, SEPARATE, SPIN, ENGSPINY, ENGSPINZ).
  */
 
 import { scene } from '../../scene/setup.js';
@@ -38,19 +38,31 @@ export function createApplySequenceAction(deps) {
       const angle = Number(m[1]);
       const active = getActiveBottomPhase(deps.rocketEntity.separatedPhases, deps.rocketEntity.maxPhase);
       if (active !== null) {
-        deps.rocketEntity.pendingEngineSpinDegByPhase[active] =
-          (deps.rocketEntity.pendingEngineSpinDegByPhase[active] ?? 0) + angle;
+        deps.rocketEntity.pendingEngineSpinYDegByPhase[active] =
+          (deps.rocketEntity.pendingEngineSpinYDegByPhase[active] ?? 0) + angle;
       }
       return;
     }
 
-    m = s.match(/^ENGSPIN\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+    // ENGSPINY
+    m = s.match(/^ENGSPINY\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
+    if (m) {
+      const phase = Number(m[1]);
+      const angle = Number(m[2]);
+      if (phase < 1 || phase > deps.rocketEntity.maxPhase || deps.rocketEntity.separatedPhases.has(phase)) return;
+      deps.rocketEntity.pendingEngineSpinYDegByPhase[phase] =
+        (deps.rocketEntity.pendingEngineSpinYDegByPhase[phase] ?? 0) + angle;
+      return;
+    }
+
+    // ENGSPINZ
+    m = s.match(/^ENGSPINZ\s+(\d+)\s+([-+]?\d+(?:\.\d+)?)d$/i);
     if (!m) return;
     const phase = Number(m[1]);
     const angle = Number(m[2]);
     if (phase < 1 || phase > deps.rocketEntity.maxPhase || deps.rocketEntity.separatedPhases.has(phase)) return;
-    deps.rocketEntity.pendingEngineSpinDegByPhase[phase] =
-      (deps.rocketEntity.pendingEngineSpinDegByPhase[phase] ?? 0) + angle;
+    deps.rocketEntity.pendingEngineSpinZDegByPhase[phase] =
+      (deps.rocketEntity.pendingEngineSpinZDegByPhase[phase] ?? 0) + angle;
   };
 }
 

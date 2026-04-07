@@ -4,7 +4,7 @@
 
 - `js/game/flightSimulation.js`: orquestador público (`startFlightSimulation`, `updateFlightSimulation`).
 - `js/game/sim/simulationEvents.js`: cursores ordenados por tiempo/altitud.
-- `js/game/sim/simulationActions.js`: aplica `THROTTLE`, `SEPARATE`, `SPIN`, `ENGSPIN`.
+- `js/game/sim/simulationActions.js`: aplica `THROTTLE`, `SEPARATE`, `SPIN`, `ENGSPINY`, `ENGSPINZ`.
 - `js/game/sim/simulationDebris.js`: física visual de etapas separadas.
 - `js/game/sim/simulationAttitude.js`: rotación progresiva por autoridad de empuje.
 - `js/game/sim/simulationVisualSync.js`: transform + llamas.
@@ -18,8 +18,9 @@
 5. integración (`integrateEuler`)
 6. actitud angular y aplicación de giro pendiente
 
-## Sobre `SPIN` y `ENGSPIN`
+## Sobre `SPIN`, `ENGSPINY` y `ENGSPINZ`
 
-- `SPIN X` encola giro sobre fase activa.
-- `ENGSPIN fase Xd` encola giro en fase específica (si no fue separada).
+- `SPIN X` encola giro sobre fase activa (eje Y).
+- `ENGSPINY fase Xd` encola giro en eje Y (pitch) para fase específica (si no fue separada).
+- `ENGSPINZ fase Xd` encola giro en eje Z (yaw) para fase específica (si no fue separada).
 - La ejecución es gradual; no hay salto instantáneo de ángulo.
